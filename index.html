@@ -175,6 +175,20 @@
   }
   .no-roster-hint{font-size:12.5px;color:var(--text-faint);padding:6px 0 4px;}
 
+  .undo-strip{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    background:rgba(245,166,35,.08);border:1px solid var(--amber-dim);border-radius:9px;
+    padding:9px 12px;margin-bottom:14px;animation:undoIn .15s ease;
+  }
+  @keyframes undoIn{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
+  .undo-msg{font-size:12.5px;color:var(--text-dim);}
+  .undo-msg b{color:var(--text);}
+  .undo-btn{
+    background:var(--amber);color:#1a1206;font-weight:700;font-size:12.5px;
+    padding:7px 14px;border-radius:7px;flex-shrink:0;font-family:'Inter',sans-serif;
+  }
+  .undo-btn:hover{box-shadow:0 0 0 1px var(--amber);}
+
   .action-grid{
     display:grid;grid-template-columns:1fr 1fr;gap:10px;
   }
@@ -187,6 +201,7 @@
   .action-group[data-group="Attack"]{border-top-color:#F5A623;}
   .action-group[data-group="Block"]{border-top-color:#4ADE80;}
   .action-group[data-group="Set"]{border-top-color:#E86A92;}
+  .action-group[data-group="Defense"]{border-top-color:#5ED9C7;}
   .action-group .glabel{
     font-size:10.5px;color:var(--text-faint);letter-spacing:.07em;text-transform:uppercase;
     margin-bottom:8px;display:block;
@@ -247,6 +262,7 @@
   .prow-group[data-group="Attack"]{border-top-color:#F5A623;}
   .prow-group[data-group="Block"]{border-top-color:#4ADE80;}
   .prow-group[data-group="Set"]{border-top-color:#E86A92;}
+  .prow-group[data-group="Defense"]{border-top-color:#5ED9C7;}
   .prow-glabel{
     font-size:9.5px;color:var(--text-faint);letter-spacing:.06em;text-transform:uppercase;
     font-family:'JetBrains Mono',monospace;padding-left:1px;
@@ -426,6 +442,11 @@
         </span>
       </h2>
 
+      <div class="undo-strip" id="undoStrip" style="display:none;">
+        <span class="undo-msg" id="undoMsg"></span>
+        <button class="undo-btn" id="undoBtn">↺ Undo</button>
+      </div>
+
       <div id="rosterEmptyHint" class="no-roster-hint">Add players to your roster above to start tagging.</div>
 
       <!-- BY PLAYER GRID (default) -->
@@ -479,6 +500,7 @@ const STAT_META = {
   kill:       {label:'Kill', kind:'good'},
   setErr:     {label:'Set error', kind:'bad'},
   setInacc:   {label:'Inaccurate set', kind:'bad'},
+  dig:        {label:'Dig', kind:'good'},
 };
 
 const BOX_COLUMNS = [
@@ -491,6 +513,7 @@ const BOX_COLUMNS = [
   {key:'assist', label:'AST'},
   {key:'setErr', label:'STE'},
   {key:'setInacc', label:'INS'},
+  {key:'dig', label:'DIG'},
 ];
 
 /* Shared source of truth for both layouts: grouped (for "by action" view)
@@ -514,6 +537,9 @@ const ACTION_DEFS = [
     {key:'assist', full:'Assist', short:'Asst'},
     {key:'setErr', full:'Error', short:'Err'},
     {key:'setInacc', full:'Inaccurate', short:'Inacc'},
+  ]},
+  {group:'Defense', items:[
+    {key:'dig', full:'Dig', short:'Dig'},
   ]},
 ];
 
@@ -812,7 +838,41 @@ function tagEvent(num, statKey, btnEl){
   renderBoxscore();
   renderLog();
   renderInlineCounts();
+  showUndoStrip(state.events[state.events.length-1]);
 }
+
+/* ================= UNDO ================= */
+let undoHideTimer = null;
+function showUndoStrip(ev){
+  const strip = document.getElementById('undoStrip');
+  const msg = document.getElementById('undoMsg');
+  const who = ev.name ? `#${ev.num} ${ev.name}` : `#${ev.num}`;
+  msg.innerHTML = `Tagged <b>${ev.label}</b> for <b>${who}</b> at ${fmtTime(ev.t)}`;
+  strip.style.display = 'flex';
+  clearTimeout(undoHideTimer);
+  undoHideTimer = setTimeout(() => { strip.style.display = 'none'; }, 6000);
+}
+
+document.getElementById('undoBtn').addEventListener('click', () => {
+  if(state.events.length === 0) return;
+  const removed = state.events.pop();
+  renderBoxscore();
+  renderLog();
+  renderInlineCounts();
+  document.getElementById('undoStrip').style.display = 'none';
+  clearTimeout(undoHideTimer);
+  const who = removed.name ? `#${removed.num} ${removed.name}` : `#${removed.num}`;
+  showToast(`Removed: ${removed.label} — ${who}`);
+});
+
+/* Keyboard shortcut: Ctrl/Cmd+Z to undo the last tag (when not typing in a field) */
+document.addEventListener('keydown', (e) => {
+  if(['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return;
+  if((e.ctrlKey || e.metaKey) && e.key === 'z'){
+    e.preventDefault();
+    document.getElementById('undoBtn').click();
+  }
+});
 
 /* Update the little counters next to each button in both layouts without a full re-render */
 function renderInlineCounts(){
@@ -909,6 +969,7 @@ document.getElementById('logList').addEventListener('click', (e) => {
     renderBoxscore();
     renderLog();
     renderInlineCounts();
+    document.getElementById('undoStrip').style.display = 'none';
   }
 });
 
@@ -918,6 +979,7 @@ document.getElementById('clearLogBtn').addEventListener('click', () => {
   renderBoxscore();
   renderLog();
   renderInlineCounts();
+  document.getElementById('undoStrip').style.display = 'none';
 });
 
 /* ================= EXPORT ================= */
