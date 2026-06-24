@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stat Console — Volleyball Tagger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#15171C;
+    --panel:#1B1E25;
+    --panel-2:#21242D;
+    --card:#2A2E38;
+    --card-hover:#343844;
+    --line:#33373F;
+    --amber:#F5A623;
+    --amber-dim:#7a5719;
+    --good:#4ADE80;
+    --bad:#EF4444;
+    --text:#E8E9ED;
+    --text-dim:#9A9DA6;
+    --text-faint:#62656d;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1320px;margin:0 auto;padding:20px 20px 80px;}
+
+  /* ---------- Header ---------- */
+  header{
+    display:flex;align-items:baseline;justify-content:space-between;
+    padding:6px 2px 20px;border-bottom:1px solid var(--line);margin-bottom:22px;
+    flex-wrap:wrap;gap:10px;
+  }
+  .brand{display:flex;align-items:baseline;gap:12px;}
+  .brand h1{
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px;
+    letter-spacing:-0.01em;margin:0;color:var(--text);
+  }
+  .brand .tag{
+    font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-faint);
+    letter-spacing:.08em;text-transform:uppercase;
+  }
+  .matchclock{
+    font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text-dim);
+  }
+
+  /* ---------- Setup panel ---------- */
+  .setup{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:20px 22px;margin-bottom:20px;
+  }
+  .setup h2{
+    font-family:'Space Grotesk',sans-serif;font-size:14px;margin:0 0 14px;
+    color:var(--text-dim);font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+  }
+  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;}
+  .field{display:flex;flex-direction:column;gap:6px;}
+  .field label{font-size:11px;color:var(--text-faint);letter-spacing:.05em;text-transform:uppercase;}
+  input[type=text], input[type=url]{
+    background:var(--card);border:1px solid var(--line);border-radius:8px;
+    color:var(--text);padding:10px 12px;font-size:14px;font-family:'Inter',sans-serif;
+    outline:none;transition:border-color .15s;
+  }
+  input[type=text]:focus, input[type=url]:focus{border-color:var(--amber);}
+  .url-field input{width:380px;}
+  .roster-input{display:flex;gap:8px;}
+  .roster-input input{width:90px;}
+  .roster-input input.name{width:170px;}
+  button{
+    font-family:'Inter',sans-serif;cursor:pointer;border:none;border-radius:8px;
+    transition:transform .08s ease, background .15s, box-shadow .15s;
+  }
+  button:active{transform:scale(0.96);}
+  .btn-primary{
+    background:var(--amber);color:#1a1206;font-weight:600;font-size:13.5px;
+    padding:10px 18px;
+  }
+  .btn-primary:hover{box-shadow:0 0 0 1px var(--amber);}
+  .btn-ghost{
+    background:transparent;border:1px solid var(--line);color:var(--text-dim);
+    font-size:13px;padding:9px 16px;
+  }
+  .btn-ghost:hover{border-color:var(--text-dim);color:var(--text);}
+  .btn-small{
+    background:var(--card);color:var(--text-dim);font-size:12px;padding:7px 10px;
+    border:1px solid var(--line);
+  }
+  .btn-small:hover{color:var(--text);}
+
+  .roster-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+  .roster-chip{
+    display:flex;align-items:center;gap:8px;background:var(--card);
+    border:1px solid var(--line);border-radius:8px;padding:6px 10px 6px 12px;
+    font-size:13px;
+  }
+  .roster-chip .num{
+    font-family:'JetBrains Mono',monospace;color:var(--amber);font-weight:600;
+  }
+  .roster-chip .rm{
+    color:var(--text-faint);background:none;border:none;cursor:pointer;
+    font-size:15px;line-height:1;padding:0 2px;
+  }
+  .roster-chip .rm:hover{color:var(--bad);}
+
+  /* ---------- Main grid ---------- */
+  .main{display:grid;grid-template-columns:1.3fr 1fr;gap:20px;align-items:start;}
+  @media (max-width: 980px){.main{grid-template-columns:1fr;}}
+
+  .video-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    overflow:hidden;
+  }
+  .video-frame-outer{
+    position:relative;width:100%;aspect-ratio:16/9;background:#000;
+  }
+  #yt-player{position:absolute;top:0;left:0;width:100%;height:100%;}
+  .video-empty{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    color:var(--text-faint);font-size:13px;text-align:center;padding:30px;
+    flex-direction:column;gap:10px;
+  }
+  .video-empty svg{opacity:.35;}
+
+  .video-controls{
+    display:flex;align-items:center;gap:10px;padding:14px 16px;border-top:1px solid var(--line);
+    flex-wrap:wrap;
+  }
+  .seek-btn{
+    background:var(--card);color:var(--text);font-size:12px;padding:8px 12px;
+    border:1px solid var(--line);font-family:'JetBrains Mono',monospace;
+  }
+  .seek-btn:hover{background:var(--card-hover);}
+  .play-btn{
+    background:var(--amber);color:#1a1206;width:38px;height:38px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;font-size:14px;
+  }
+  .speed-select{
+    background:var(--card);color:var(--text);border:1px solid var(--line);
+    border-radius:8px;padding:8px 10px;font-size:12px;font-family:'JetBrains Mono',monospace;
+  }
+  .clock{
+    font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text-dim);
+    margin-left:auto;
+  }
+
+  /* ---------- Tap pad ---------- */
+  .pad-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:18px 18px 20px;
+  }
+  .pad-card h2{
+    font-family:'Space Grotesk',sans-serif;font-size:13px;margin:0 0 14px;
+    color:var(--text-dim);font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .active-player-select{
+    display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;
+  }
+  .player-pill{
+    font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;
+    background:var(--card);border:1.5px solid var(--line);color:var(--text-dim);
+    padding:8px 12px;border-radius:8px;cursor:pointer;transition:all .12s;
+  }
+  .player-pill:hover{border-color:var(--text-dim);color:var(--text);}
+  .player-pill.active{
+    background:var(--amber);border-color:var(--amber);color:#1a1206;
+  }
+  .no-roster-hint{font-size:12.5px;color:var(--text-faint);padding:6px 0 4px;}
+
+  .action-grid{
+    display:grid;grid-template-columns:1fr 1fr;gap:10px;
+  }
+  .action-group{
+    background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:10px;
+  }
+  .action-group .glabel{
+    font-size:10.5px;color:var(--text-faint);letter-spacing:.07em;text-transform:uppercase;
+    margin-bottom:8px;display:block;
+  }
+  .action-btns{display:flex;flex-wrap:wrap;gap:6px;}
+  .stat-btn{
+    flex:1;min-width:72px;
+    background:var(--card);border:1px solid var(--line);color:var(--text);
+    font-size:12.5px;font-weight:600;padding:10px 8px;border-radius:8px;
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+    font-family:'Inter',sans-serif;
+  }
+  .stat-btn .ct{
+    font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:var(--text-dim);
+  }
+  .stat-btn:hover{background:var(--card-hover);}
+  .stat-btn.good:hover{box-shadow:inset 0 0 0 1.5px var(--good);}
+  .stat-btn.bad:hover{box-shadow:inset 0 0 0 1.5px var(--bad);}
+  .stat-btn.neutral:hover{box-shadow:inset 0 0 0 1.5px var(--amber);}
+  .stat-btn.flash{animation:flashpop .35s ease;}
+  @keyframes flashpop{
+    0%{background:var(--amber);transform:scale(1.05);}
+    100%{background:var(--card);transform:scale(1);}
+  }
+  .disabled-pad{opacity:.4;pointer-events:none;}
+
+  /* ---------- Box score ---------- */
+  .boxscore{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:18px 18px 16px;margin-top:20px;
+  }
+  .boxscore h2{
+    font-family:'Space Grotesk',sans-serif;font-size:13px;margin:0 0 14px;
+    color:var(--text-dim);font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  thead th{
+    text-align:center;font-family:'JetBrains Mono',monospace;font-size:10.5px;
+    color:var(--text-faint);text-transform:uppercase;letter-spacing:.04em;
+    padding:6px 4px;border-bottom:1px solid var(--line);font-weight:500;
+  }
+  thead th:first-child{text-align:left;}
+  tbody td{
+    text-align:center;padding:8px 4px;border-bottom:1px solid #25282f;
+    font-family:'JetBrains Mono',monospace;color:var(--text);
+  }
+  tbody td:first-child{
+    text-align:left;font-family:'Inter',sans-serif;font-weight:600;color:var(--text);
+  }
+  tbody tr:hover{background:var(--panel-2);}
+  .num-cell{color:var(--amber);font-weight:600;margin-right:6px;}
+  tfoot td{
+    font-weight:700;padding-top:10px;border-top:1.5px solid var(--line);border-bottom:none;
+    color:var(--text-dim);
+  }
+  .empty-box{color:var(--text-faint);font-size:13px;padding:18px 4px;text-align:center;}
+
+  /* ---------- Event log ---------- */
+  .log-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:18px 18px 16px;margin-top:20px;
+  }
+  .log-card h2{
+    font-family:'Space Grotesk',sans-serif;font-size:13px;margin:0 0 12px;
+    color:var(--text-dim);font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .log-list{max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;}
+  .log-item{
+    display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--panel-2);
+    border-radius:8px;font-size:12.5px;
+  }
+  .log-item .time{
+    font-family:'JetBrains Mono',monospace;color:var(--amber);width:52px;flex-shrink:0;
+    cursor:pointer;
+  }
+  .log-item .time:hover{text-decoration:underline;}
+  .log-item .who{font-weight:600;width:90px;flex-shrink:0;}
+  .log-item .what{flex:1;color:var(--text-dim);}
+  .log-item .tag{
+    font-size:10px;padding:2px 7px;border-radius:5px;font-family:'JetBrains Mono',monospace;
+    text-transform:uppercase;letter-spacing:.03em;flex-shrink:0;
+  }
+  .tag.good{background:rgba(74,222,128,.15);color:var(--good);}
+  .tag.bad{background:rgba(239,68,68,.15);color:var(--bad);}
+  .tag.neutral{background:rgba(245,166,35,.15);color:var(--amber);}
+  .log-item .del{
+    background:none;border:none;color:var(--text-faint);cursor:pointer;font-size:14px;
+    flex-shrink:0;
+  }
+  .log-item .del:hover{color:var(--bad);}
+  .log-empty{color:var(--text-faint);font-size:13px;text-align:center;padding:16px 0;}
+
+  .footer-actions{display:flex;gap:10px;margin-top:22px;justify-content:flex-end;}
+
+  ::-webkit-scrollbar{width:8px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:#3a3e48;border-radius:4px;}
+
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(10px);
+    background:var(--card);border:1px solid var(--amber);color:var(--text);
+    padding:10px 18px;border-radius:8px;font-size:13px;opacity:0;
+    transition:opacity .2s, transform .2s;pointer-events:none;z-index:50;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <h1>Stat Console</h1>
+      <span class="tag">Volleyball Match Tagger</span>
+    </div>
+    <div class="matchclock" id="headerClock">No video loaded</div>
+  </header>
+
+  <!-- SETUP -->
+  <div class="setup">
+    <h2>Match Setup</h2>
+    <div class="row">
+      <div class="field">
+        <label for="matchName">Match name <span style="color:var(--text-faint);text-transform:none;">(used in export filename)</span></label>
+        <input type="text" id="matchName" placeholder="e.g. vs Eastside 10-12" style="width:220px;">
+      </div>
+      <div class="field url-field">
+        <label for="ytUrl">YouTube video URL</label>
+        <input type="url" id="ytUrl" placeholder="https://www.youtube.com/watch?v=...">
+      </div>
+      <button class="btn-primary" id="loadVideoBtn">Load video</button>
+    </div>
+
+    <div class="row" style="margin-top:18px;">
+      <div class="field">
+        <label>Add player</label>
+        <div class="roster-input">
+          <input type="text" id="newNum" placeholder="#" maxlength="3">
+          <input type="text" class="name" id="newName" placeholder="Name (optional)">
+        </div>
+      </div>
+      <button class="btn-ghost" id="addPlayerBtn">+ Add to roster</button>
+    </div>
+
+    <div class="roster-list" id="rosterList"></div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="video-card">
+      <div class="video-frame-outer">
+        <div id="yt-player"></div>
+        <div class="video-empty" id="videoEmptyState">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="12" cy="12" r="9"/><path d="M10 9l5 3-5 3V9z"/></svg>
+          <div>Paste a YouTube link above and click <b>Load video</b> to begin.</div>
+        </div>
+      </div>
+      <div class="video-controls">
+        <button class="seek-btn" id="back10">« 10s</button>
+        <button class="play-btn" id="playPauseBtn">▶</button>
+        <button class="seek-btn" id="fwd10">10s »</button>
+        <select class="speed-select" id="speedSelect">
+          <option value="0.5">0.5×</option>
+          <option value="0.75">0.75×</option>
+          <option value="1" selected>1×</option>
+          <option value="1.25">1.25×</option>
+          <option value="1.5">1.5×</option>
+          <option value="2">2×</option>
+        </select>
+        <span class="clock" id="videoClock">00:00 / 00:00</span>
+      </div>
+    </div>
+
+    <div class="pad-card">
+      <h2>Tag a touch <span style="font-size:10.5px;color:var(--text-faint);font-weight:400;text-transform:none;">tap player, then action</span></h2>
+
+      <div id="rosterEmptyHint" class="no-roster-hint">Add players to your roster above to start tagging.</div>
+      <div class="active-player-select" id="activePlayerSelect"></div>
+
+      <div class="action-grid" id="actionPad">
+        <div class="action-group">
+          <span class="glabel">Serve</span>
+          <div class="action-btns">
+            <button class="stat-btn good" data-stat="ace">Ace <span class="ct" data-count="ace">0</span></button>
+            <button class="stat-btn neutral" data-stat="serveIn">In play <span class="ct" data-count="serveIn">0</span></button>
+            <button class="stat-btn bad" data-stat="serveErr">Error <span class="ct" data-count="serveErr">0</span></button>
+          </div>
+        </div>
+        <div class="action-group">
+          <span class="glabel">Attack</span>
+          <div class="action-btns">
+            <button class="stat-btn good" data-stat="kill">Kill <span class="ct" data-count="kill">0</span></button>
+            <button class="stat-btn neutral" data-stat="attackIn">In play <span class="ct" data-count="attackIn">0</span></button>
+            <button class="stat-btn bad" data-stat="attackErr">Error <span class="ct" data-count="attackErr">0</span></button>
+          </div>
+        </div>
+        <div class="action-group">
+          <span class="glabel">Block</span>
+          <div class="action-btns">
+            <button class="stat-btn good" data-stat="blockSolo">Solo <span class="ct" data-count="blockSolo">0</span></button>
+            <button class="stat-btn good" data-stat="blockAssist">Assist <span class="ct" data-count="blockAssist">0</span></button>
+            <button class="stat-btn bad" data-stat="blockErr">Error <span class="ct" data-count="blockErr">0</span></button>
+          </div>
+        </div>
+        <div class="action-group">
+          <span class="glabel">Dig / Defense</span>
+          <div class="action-btns">
+            <button class="stat-btn good" data-stat="dig">Dig <span class="ct" data-count="dig">0</span></button>
+            <button class="stat-btn bad" data-stat="digErr">Error <span class="ct" data-count="digErr">0</span></button>
+          </div>
+        </div>
+        <div class="action-group">
+          <span class="glabel">Set / Assist</span>
+          <div class="action-btns">
+            <button class="stat-btn good" data-stat="assist">Assist <span class="ct" data-count="assist">0</span></button>
+            <button class="stat-btn bad" data-stat="setErr">Error <span class="ct" data-count="setErr">0</span></button>
+          </div>
+        </div>
+        <div class="action-group">
+          <span class="glabel">Reception</span>
+          <div class="action-btns">
+            <button class="stat-btn good" data-stat="recPerfect">Perfect <span class="ct" data-count="recPerfect">0</span></button>
+            <button class="stat-btn bad" data-stat="recErr">Error <span class="ct" data-count="recErr">0</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOX SCORE -->
+  <div class="boxscore">
+    <h2>Live Box Score</h2>
+    <div id="boxscoreWrap"></div>
+  </div>
+
+  <!-- EVENT LOG -->
+  <div class="log-card">
+    <h2>Event Log <button class="btn-small" id="clearLogBtn">Clear all</button></h2>
+    <div class="log-list" id="logList"><div class="log-empty">No events tagged yet.</div></div>
+  </div>
+
+  <div class="footer-actions">
+    <button class="btn-ghost" id="exportBtn">Export CSV</button>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= STATE ================= */
+const state = {
+  roster: [],          // {num, name}
+  activeNum: null,
+  events: [],           // {t, num, stat, label, kind}
+  player: null,
+  playerReady: false,
+};
+
+const STAT_META = {
+  ace:        {label:'Ace', kind:'good'},
+  serveIn:    {label:'Serve in play', kind:'neutral'},
+  serveErr:   {label:'Serve error', kind:'bad'},
+  kill:       {label:'Kill', kind:'good'},
+  attackIn:   {label:'Attack in play', kind:'neutral'},
+  attackErr:  {label:'Attack error', kind:'bad'},
+  blockSolo:  {label:'Solo block', kind:'good'},
+  blockAssist:{label:'Block assist', kind:'good'},
+  blockErr:   {label:'Block error', kind:'bad'},
+  dig:        {label:'Dig', kind:'good'},
+  digErr:     {label:'Defense error', kind:'bad'},
+  assist:     {label:'Set assist', kind:'good'},
+  setErr:     {label:'Set error', kind:'bad'},
+  recPerfect: {label:'Perfect reception', kind:'good'},
+  recErr:     {label:'Reception error', kind:'bad'},
+};
+
+const BOX_COLUMNS = [
+  {key:'ace', label:'ACE'},
+  {key:'serveErr', label:'SE'},
+  {key:'kill', label:'K'},
+  {key:'attackErr', label:'AE'},
+  {key:'blockSolo', label:'BS'},
+  {key:'blockAssist', label:'BA'},
+  {key:'dig', label:'D'},
+  {key:'assist', label:'AST'},
+  {key:'recPerfect', label:'RP'},
+  {key:'recErr', label:'RE'},
+];
+
+/* ================= YOUTUBE PLAYER ================= */
+let ytApiReady = false;
+function onYouTubeIframeAPIReady(){ ytApiReady = true; }
+
+function loadYTScript(){
+  if(document.getElementById('ytapi')) return;
+  const s = document.createElement('script');
+  s.id = 'ytapi';
+  s.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(s);
+}
+loadYTScript();
+
+function extractVideoId(url){
+  const patterns = [
+    /youtu\.be\/([^?&]+)/,
+    /youtube\.com\/watch\?v=([^?&]+)/,
+    /youtube\.com\/embed\/([^?&]+)/,
+    /youtube\.com\/shorts\/([^?&]+)/,
+  ];
+  for(const p of patterns){
+    const m = url.match(p);
+    if(m) return m[1];
+  }
+  return null;
+}
+
+function initPlayer(videoId){
+  state.lastVideoId = videoId;
+  document.getElementById('videoEmptyState').style.display = 'none';
+  clearTimeout(state.loadWatchdog);
+  state.loadWatchdog = setTimeout(() => {
+    if(!state.playerReady){
+      showToast('Still not loading — see note below the player');
+      const ee = document.getElementById('videoEmptyState');
+      ee.style.display = 'flex';
+      ee.innerHTML =
+        `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>
+         <div><b>Video isn't responding.</b><br>This usually means the embed request is being blocked before YouTube even returns an error — often a sandbox/network restriction in this environment, not your video's settings.<br><br>
+         <a href="https://www.youtube.com/watch?v=${videoId}" target="_blank" style="color:var(--amber);">Open it directly on YouTube ↗</a> and use the seek/timestamp controls manually instead.</div>`;
+    }
+  }, 6000);
+  if(state.player){
+    state.playerReady = false;
+    state.player.loadVideoById(videoId);
+    return;
+  }
+  const tryInit = () => {
+    if(!ytApiReady){ setTimeout(tryInit, 200); return; }
+    state.player = new YT.Player('yt-player', {
+      videoId: videoId,
+      playerVars: { rel:0, modestbranding:1, playsinline:1 },
+      events: {
+        onReady: () => {
+          state.playerReady = true;
+          clearTimeout(state.loadWatchdog);
+          startClockLoop();
+          showToast('Video loaded — start tagging');
+        },
+        onStateChange: onPlayerStateChange,
+        onError: onPlayerError,
+      }
+    });
+  };
+  tryInit();
+}
+
+function onPlayerError(e){
+  clearTimeout(state.loadWatchdog);
+  const codes = {
+    2:   'Invalid video ID — check the URL.',
+    5:   'This video cannot be played in the embedded player (HTML5 error).',
+    100: 'Video not found — it may be private, deleted, or unavailable.',
+    101: 'The video owner has disabled playback on other websites (embedding blocked).',
+    150: 'The video owner has disabled playback on other websites (embedding blocked).',
+  };
+  const msg = codes[e.data] || `Playback error (code ${e.data}).`;
+  showToast(msg);
+  document.getElementById('videoEmptyState').style.display = 'flex';
+  document.getElementById('videoEmptyState').innerHTML =
+    `<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>
+     <div><b>Couldn't load this video.</b><br>${msg}<br><br>
+     <a href="https://www.youtube.com/watch?v=${state.lastVideoId||''}" target="_blank" style="color:var(--amber);">Open it directly on YouTube ↗</a></div>`;
+}
+
+function onPlayerStateChange(e){
+  const btn = document.getElementById('playPauseBtn');
+  if(e.data === YT.PlayerState.PLAYING){ btn.textContent = '⏸'; }
+  else { btn.textContent = '▶'; }
+}
+
+function fmtTime(sec){
+  sec = Math.max(0, Math.floor(sec||0));
+  const m = Math.floor(sec/60).toString().padStart(2,'0');
+  const s = (sec%60).toString().padStart(2,'0');
+  return `${m}:${s}`;
+}
+
+let clockInterval = null;
+function startClockLoop(){
+  if(clockInterval) clearInterval(clockInterval);
+  clockInterval = setInterval(() => {
+    if(!state.player || !state.playerReady) return;
+    try{
+      const cur = state.player.getCurrentTime();
+      const dur = state.player.getDuration();
+      document.getElementById('videoClock').textContent = `${fmtTime(cur)} / ${fmtTime(dur)}`;
+      document.getElementById('headerClock').textContent = `Match time ${fmtTime(cur)}`;
+    }catch(e){}
+  }, 400);
+}
+
+document.getElementById('loadVideoBtn').addEventListener('click', () => {
+  const url = document.getElementById('ytUrl').value.trim();
+  const id = extractVideoId(url);
+  if(!id){ showToast('Could not read a YouTube link from that URL'); return; }
+  initPlayer(id);
+});
+
+document.getElementById('playPauseBtn').addEventListener('click', () => {
+  if(!state.player) return;
+  const s = state.player.getPlayerState();
+  if(s === YT.PlayerState.PLAYING) state.player.pauseVideo();
+  else state.player.playVideo();
+});
+document.getElementById('back10').addEventListener('click', () => {
+  if(!state.player) return;
+  state.player.seekTo(Math.max(0, state.player.getCurrentTime()-10), true);
+});
+document.getElementById('fwd10').addEventListener('click', () => {
+  if(!state.player) return;
+  state.player.seekTo(state.player.getCurrentTime()+10, true);
+});
+document.getElementById('speedSelect').addEventListener('change', (e) => {
+  if(!state.player) return;
+  state.player.setPlaybackRate(parseFloat(e.target.value));
+});
+
+/* keyboard: space toggles play/pause when not typing in a field */
+document.addEventListener('keydown', (e) => {
+  if(['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return;
+  if(e.code === 'Space'){
+    e.preventDefault();
+    document.getElementById('playPauseBtn').click();
+  }
+});
+
+/* ================= ROSTER ================= */
+function addPlayer(num, name){
+  num = num.trim();
+  if(!num) return;
+  if(state.roster.some(p => p.num === num)){ showToast(`#${num} already on roster`); return; }
+  state.roster.push({num, name: name.trim()});
+  renderRoster();
+  renderActivePlayerSelect();
+  renderBoxscore();
+  document.getElementById('newNum').value='';
+  document.getElementById('newName').value='';
+  document.getElementById('newNum').focus();
+}
+
+document.getElementById('addPlayerBtn').addEventListener('click', () => {
+  addPlayer(document.getElementById('newNum').value, document.getElementById('newName').value);
+});
+document.getElementById('newName').addEventListener('keydown', (e) => {
+  if(e.key === 'Enter') document.getElementById('addPlayerBtn').click();
+});
+document.getElementById('newNum').addEventListener('keydown', (e) => {
+  if(e.key === 'Enter') document.getElementById('addPlayerBtn').click();
+});
+
+function removePlayer(num){
+  state.roster = state.roster.filter(p => p.num !== num);
+  if(state.activeNum === num) state.activeNum = null;
+  renderRoster();
+  renderActivePlayerSelect();
+  renderBoxscore();
+}
+
+function renderRoster(){
+  const wrap = document.getElementById('rosterList');
+  wrap.innerHTML = '';
+  state.roster.forEach(p => {
+    const chip = document.createElement('div');
+    chip.className = 'roster-chip';
+    chip.innerHTML = `<span class="num">#${p.num}</span><span>${p.name || ''}</span>`;
+    const rm = document.createElement('button');
+    rm.className = 'rm';
+    rm.textContent = '×';
+    rm.addEventListener('click', () => removePlayer(p.num));
+    chip.appendChild(rm);
+    wrap.appendChild(chip);
+  });
+}
+
+function renderActivePlayerSelect(){
+  const wrap = document.getElementById('activePlayerSelect');
+  const hint = document.getElementById('rosterEmptyHint');
+  const pad = document.getElementById('actionPad');
+  wrap.innerHTML = '';
+  if(state.roster.length === 0){
+    hint.style.display = 'block';
+    pad.classList.add('disabled-pad');
+    return;
+  }
+  hint.style.display = 'none';
+  pad.classList.remove('disabled-pad');
+  state.roster.forEach(p => {
+    const pill = document.createElement('button');
+    pill.className = 'player-pill' + (state.activeNum === p.num ? ' active' : '');
+    pill.textContent = `#${p.num}${p.name ? ' ' + p.name : ''}`;
+    pill.addEventListener('click', () => {
+      state.activeNum = p.num;
+      renderActivePlayerSelect();
+    });
+    wrap.appendChild(pill);
+  });
+}
+
+/* ================= TAGGING ================= */
+document.getElementById('actionPad').addEventListener('click', (e) => {
+  const btn = e.target.closest('.stat-btn');
+  if(!btn) return;
+  if(!state.activeNum){ showToast('Select a player first'); return; }
+  const statKey = btn.dataset.stat;
+  const meta = STAT_META[statKey];
+  const t = state.player && state.playerReady ? state.player.getCurrentTime() : 0;
+  state.events.push({
+    t, num: state.activeNum, stat: statKey, label: meta.label, kind: meta.kind,
+    name: (state.roster.find(p=>p.num===state.activeNum)||{}).name || ''
+  });
+  btn.classList.remove('flash');
+  requestAnimationFrame(() => btn.classList.add('flash'));
+  setTimeout(() => btn.classList.remove('flash'), 360);
+  renderBoxscore();
+  renderLog();
+});
+
+/* ================= BOX SCORE ================= */
+function renderBoxscore(){
+  const wrap = document.getElementById('boxscoreWrap');
+  if(state.roster.length === 0){
+    wrap.innerHTML = `<div class="empty-box">Add players to see live stats here.</div>`;
+    return;
+  }
+  let totals = {};
+  state.roster.forEach(p => { totals[p.num] = {}; BOX_COLUMNS.forEach(c => totals[p.num][c.key]=0); });
+  state.events.forEach(ev => {
+    if(totals[ev.num] !== undefined && totals[ev.num][ev.stat] !== undefined){
+      totals[ev.num][ev.stat]++;
+    }
+  });
+
+  let thead = `<tr><th>Player</th>${BOX_COLUMNS.map(c=>`<th title="${STAT_META[c.key].label}">${c.label}</th>`).join('')}<th>TOT</th></tr>`;
+  let rows = state.roster.map(p => {
+    const t = totals[p.num];
+    const sum = BOX_COLUMNS.reduce((a,c)=>a+t[c.key],0);
+    return `<tr><td><span class="num-cell">#${p.num}</span>${p.name||''}</td>${BOX_COLUMNS.map(c=>`<td>${t[c.key]||''}</td>`).join('')}<td style="color:var(--amber);font-weight:700;">${sum}</td></tr>`;
+  }).join('');
+
+  let teamTotals = {};
+  BOX_COLUMNS.forEach(c => teamTotals[c.key] = state.roster.reduce((a,p)=>a+totals[p.num][c.key],0));
+  const teamSum = BOX_COLUMNS.reduce((a,c)=>a+teamTotals[c.key],0);
+  let foot = `<tr><td>Team</td>${BOX_COLUMNS.map(c=>`<td>${teamTotals[c.key]||''}</td>`).join('')}<td>${teamSum}</td></tr>`;
+
+  wrap.innerHTML = `<table><thead>${thead}</thead><tbody>${rows}</tbody><tfoot>${foot}</tfoot></table>`;
+}
+
+/* ================= EVENT LOG ================= */
+function renderLog(){
+  const wrap = document.getElementById('logList');
+  if(state.events.length === 0){
+    wrap.innerHTML = `<div class="log-empty">No events tagged yet.</div>`;
+    return;
+  }
+  const sorted = state.events.map((ev,i)=>({...ev, idx:i})).sort((a,b)=>b.t-a.t);
+  wrap.innerHTML = sorted.map(ev => `
+    <div class="log-item">
+      <span class="time" data-seek="${ev.t}">${fmtTime(ev.t)}</span>
+      <span class="who">#${ev.num} ${ev.name||''}</span>
+      <span class="what">${ev.label}</span>
+      <span class="tag ${ev.kind}">${ev.kind}</span>
+      <button class="del" data-idx="${ev.idx}">×</button>
+    </div>
+  `).join('');
+}
+
+document.getElementById('logList').addEventListener('click', (e) => {
+  const seek = e.target.closest('[data-seek]');
+  if(seek && state.player){
+    state.player.seekTo(parseFloat(seek.dataset.seek), true);
+    state.player.playVideo();
+    return;
+  }
+  const del = e.target.closest('.del');
+  if(del){
+    const idx = parseInt(del.dataset.idx);
+    state.events.splice(idx,1);
+    renderBoxscore();
+    renderLog();
+  }
+});
+
+document.getElementById('clearLogBtn').addEventListener('click', () => {
+  if(state.events.length && !confirm('Clear all tagged events? This cannot be undone.')) return;
+  state.events = [];
+  renderBoxscore();
+  renderLog();
+});
+
+/* ================= EXPORT ================= */
+document.getElementById('exportBtn').addEventListener('click', () => {
+  if(state.events.length === 0){ showToast('No events to export yet'); return; }
+
+  let lines = [];
+  lines.push(['Timestamp (s)','Timestamp (mm:ss)','Player #','Player Name','Stat','Outcome'].join(','));
+  state.events.slice().sort((a,b)=>a.t-b.t).forEach(ev => {
+    lines.push([
+      ev.t.toFixed(1), fmtTime(ev.t), ev.num, `"${ev.name||''}"`, `"${ev.label}"`, ev.kind
+    ].join(','));
+  });
+  lines.push('');
+  lines.push(['Player #','Player Name', ...BOX_COLUMNS.map(c=>c.label), 'Total'].join(','));
+  state.roster.forEach(p => {
+    const t = {}; BOX_COLUMNS.forEach(c => t[c.key]=0);
+    state.events.filter(ev=>ev.num===p.num).forEach(ev => { if(t[ev.stat]!==undefined) t[ev.stat]++; });
+    const sum = BOX_COLUMNS.reduce((a,c)=>a+t[c.key],0);
+    lines.push([p.num, `"${p.name||''}"`, ...BOX_COLUMNS.map(c=>t[c.key]), sum].join(','));
+  });
+
+  const blob = new Blob([lines.join('\n')], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const rawName = document.getElementById('matchName').value.trim();
+  const safeName = rawName
+    ? rawName.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '')
+    : 'match';
+  a.download = `volleyball_${safeName}_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('CSV exported');
+});
+
+/* ================= TOAST ================= */
+let toastTimer = null;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+/* ================= INIT ================= */
+renderRoster();
+renderActivePlayerSelect();
+renderBoxscore();
+renderLog();
+</script>
+</body>
+</html>
