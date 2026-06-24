@@ -180,7 +180,13 @@
   }
   .action-group{
     background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:10px;
+    border-top:2.5px solid var(--line);
   }
+  .action-group[data-group="Serve"]{border-top-color:#5B9BD5;}
+  .action-group[data-group="Reception"]{border-top-color:#9B7EDE;}
+  .action-group[data-group="Attack"]{border-top-color:#F5A623;}
+  .action-group[data-group="Block"]{border-top-color:#4ADE80;}
+  .action-group[data-group="Set"]{border-top-color:#E86A92;}
   .action-group .glabel{
     font-size:10.5px;color:var(--text-faint);letter-spacing:.07em;text-transform:uppercase;
     margin-bottom:8px;display:block;
@@ -206,6 +212,61 @@
     100%{background:var(--card);transform:scale(1);}
   }
   .disabled-pad{opacity:.4;pointer-events:none;}
+
+  /* ---------- Layout toggle ---------- */
+  .layout-toggle{display:flex;gap:6px;}
+  .toggle-btn{
+    background:var(--card);border:1px solid var(--line);color:var(--text-faint);
+    font-size:11px;font-weight:600;padding:6px 12px;border-radius:7px;
+    text-transform:uppercase;letter-spacing:.03em;font-family:'Inter',sans-serif;
+  }
+  .toggle-btn:hover{color:var(--text-dim);}
+  .toggle-btn.active{background:var(--amber);border-color:var(--amber);color:#1a1206;}
+
+  /* ---------- Per-player grid ---------- */
+  .player-grid{display:flex;flex-direction:column;gap:10px;max-height:640px;overflow-y:auto;padding-right:4px;}
+  .player-row{
+    background:var(--panel-2);border:1px solid var(--line);border-radius:10px;
+    padding:10px 12px;
+  }
+  .player-row-head{
+    display:flex;align-items:baseline;gap:8px;margin-bottom:8px;
+  }
+  .player-row-head .pnum{
+    font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--amber);font-size:14px;
+  }
+  .player-row-head .pname{font-size:13px;color:var(--text-dim);}
+  .prow-groups{display:flex;flex-wrap:wrap;gap:8px;}
+  .prow-group{
+    background:var(--panel);border:1px solid var(--line);border-radius:8px;
+    padding:6px 7px 7px;display:flex;flex-direction:column;gap:5px;
+    border-top:2px solid var(--line);
+  }
+  .prow-group[data-group="Serve"]{border-top-color:#5B9BD5;}
+  .prow-group[data-group="Reception"]{border-top-color:#9B7EDE;}
+  .prow-group[data-group="Attack"]{border-top-color:#F5A623;}
+  .prow-group[data-group="Block"]{border-top-color:#4ADE80;}
+  .prow-group[data-group="Set"]{border-top-color:#E86A92;}
+  .prow-glabel{
+    font-size:9.5px;color:var(--text-faint);letter-spacing:.06em;text-transform:uppercase;
+    font-family:'JetBrains Mono',monospace;padding-left:1px;
+  }
+  .prow-btns{display:flex;flex-wrap:wrap;gap:5px;}
+  .pbtn{
+    background:var(--card);border:1px solid var(--line);color:var(--text);
+    font-size:11.5px;font-weight:600;padding:7px 9px;border-radius:7px;
+    font-family:'Inter',sans-serif;display:flex;align-items:center;gap:5px;
+    white-space:nowrap;
+  }
+  .pbtn .pct{
+    font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;
+    color:var(--text-faint);min-width:11px;text-align:center;
+  }
+  .pbtn:hover{background:var(--card-hover);}
+  .pbtn.good:hover{box-shadow:inset 0 0 0 1.5px var(--good);}
+  .pbtn.bad:hover{box-shadow:inset 0 0 0 1.5px var(--bad);}
+  .pbtn.neutral:hover{box-shadow:inset 0 0 0 1.5px var(--amber);}
+  .pbtn.flash{animation:flashpop .35s ease;}
 
   /* ---------- Box score ---------- */
   .boxscore{
@@ -357,57 +418,23 @@
     </div>
 
     <div class="pad-card">
-      <h2>Tag a touch <span style="font-size:10.5px;color:var(--text-faint);font-weight:400;text-transform:none;">tap player, then action</span></h2>
+      <h2>
+        Tag a touch
+        <span class="layout-toggle">
+          <button class="toggle-btn active" id="modeByPlayer">By player</button>
+          <button class="toggle-btn" id="modeByAction">By action</button>
+        </span>
+      </h2>
 
       <div id="rosterEmptyHint" class="no-roster-hint">Add players to your roster above to start tagging.</div>
-      <div class="active-player-select" id="activePlayerSelect"></div>
 
-      <div class="action-grid" id="actionPad">
-        <div class="action-group">
-          <span class="glabel">Serve</span>
-          <div class="action-btns">
-            <button class="stat-btn good" data-stat="ace">Ace <span class="ct" data-count="ace">0</span></button>
-            <button class="stat-btn neutral" data-stat="serveIn">In play <span class="ct" data-count="serveIn">0</span></button>
-            <button class="stat-btn bad" data-stat="serveErr">Error <span class="ct" data-count="serveErr">0</span></button>
-          </div>
-        </div>
-        <div class="action-group">
-          <span class="glabel">Attack</span>
-          <div class="action-btns">
-            <button class="stat-btn good" data-stat="kill">Kill <span class="ct" data-count="kill">0</span></button>
-            <button class="stat-btn neutral" data-stat="attackIn">In play <span class="ct" data-count="attackIn">0</span></button>
-            <button class="stat-btn bad" data-stat="attackErr">Error <span class="ct" data-count="attackErr">0</span></button>
-          </div>
-        </div>
-        <div class="action-group">
-          <span class="glabel">Block</span>
-          <div class="action-btns">
-            <button class="stat-btn good" data-stat="blockSolo">Solo <span class="ct" data-count="blockSolo">0</span></button>
-            <button class="stat-btn good" data-stat="blockAssist">Assist <span class="ct" data-count="blockAssist">0</span></button>
-            <button class="stat-btn bad" data-stat="blockErr">Error <span class="ct" data-count="blockErr">0</span></button>
-          </div>
-        </div>
-        <div class="action-group">
-          <span class="glabel">Dig / Defense</span>
-          <div class="action-btns">
-            <button class="stat-btn good" data-stat="dig">Dig <span class="ct" data-count="dig">0</span></button>
-            <button class="stat-btn bad" data-stat="digErr">Error <span class="ct" data-count="digErr">0</span></button>
-          </div>
-        </div>
-        <div class="action-group">
-          <span class="glabel">Set / Assist</span>
-          <div class="action-btns">
-            <button class="stat-btn good" data-stat="assist">Assist <span class="ct" data-count="assist">0</span></button>
-            <button class="stat-btn bad" data-stat="setErr">Error <span class="ct" data-count="setErr">0</span></button>
-          </div>
-        </div>
-        <div class="action-group">
-          <span class="glabel">Reception</span>
-          <div class="action-btns">
-            <button class="stat-btn good" data-stat="recPerfect">Perfect <span class="ct" data-count="recPerfect">0</span></button>
-            <button class="stat-btn bad" data-stat="recErr">Error <span class="ct" data-count="recErr">0</span></button>
-          </div>
-        </div>
+      <!-- BY PLAYER GRID (default) -->
+      <div id="playerGrid" class="player-grid"></div>
+
+      <!-- BY ACTION (original flow) -->
+      <div id="byActionView" class="by-action-view" style="display:none;">
+        <div class="active-player-select" id="activePlayerSelect"></div>
+        <div class="action-grid" id="actionPad"></div>
       </div>
     </div>
   </div>
@@ -444,33 +471,50 @@ const state = {
 
 const STAT_META = {
   ace:        {label:'Ace', kind:'good'},
-  serveIn:    {label:'Serve in play', kind:'neutral'},
-  serveErr:   {label:'Serve error', kind:'bad'},
-  kill:       {label:'Kill', kind:'good'},
-  attackIn:   {label:'Attack in play', kind:'neutral'},
-  attackErr:  {label:'Attack error', kind:'bad'},
-  blockSolo:  {label:'Solo block', kind:'good'},
-  blockAssist:{label:'Block assist', kind:'good'},
-  blockErr:   {label:'Block error', kind:'bad'},
-  dig:        {label:'Dig', kind:'good'},
-  digErr:     {label:'Defense error', kind:'bad'},
-  assist:     {label:'Set assist', kind:'good'},
-  setErr:     {label:'Set error', kind:'bad'},
-  recPerfect: {label:'Perfect reception', kind:'good'},
+  serveErr:   {label:'Service error', kind:'bad'},
   recErr:     {label:'Reception error', kind:'bad'},
+  block:      {label:'Block', kind:'good'},
+  recPerfect: {label:'Perfect pass', kind:'good'},
+  assist:     {label:'Assist', kind:'good'},
+  kill:       {label:'Kill', kind:'good'},
+  setErr:     {label:'Set error', kind:'bad'},
+  setInacc:   {label:'Inaccurate set', kind:'bad'},
 };
 
 const BOX_COLUMNS = [
   {key:'ace', label:'ACE'},
   {key:'serveErr', label:'SE'},
-  {key:'kill', label:'K'},
-  {key:'attackErr', label:'AE'},
-  {key:'blockSolo', label:'BS'},
-  {key:'blockAssist', label:'BA'},
-  {key:'dig', label:'D'},
-  {key:'assist', label:'AST'},
-  {key:'recPerfect', label:'RP'},
+  {key:'recPerfect', label:'PP'},
   {key:'recErr', label:'RE'},
+  {key:'kill', label:'K'},
+  {key:'block', label:'BLK'},
+  {key:'assist', label:'AST'},
+  {key:'setErr', label:'STE'},
+  {key:'setInacc', label:'INS'},
+];
+
+/* Shared source of truth for both layouts: grouped (for "by action" view)
+   and short-labeled (for compact per-player buttons) */
+const ACTION_DEFS = [
+  {group:'Serve', items:[
+    {key:'ace', full:'Ace', short:'Ace'},
+    {key:'serveErr', full:'Error', short:'Err'},
+  ]},
+  {group:'Reception', items:[
+    {key:'recPerfect', full:'Perfect pass', short:'Pass'},
+    {key:'recErr', full:'Error', short:'Err'},
+  ]},
+  {group:'Attack', items:[
+    {key:'kill', full:'Kill', short:'Kill'},
+  ]},
+  {group:'Block', items:[
+    {key:'block', full:'Block', short:'Blk'},
+  ]},
+  {group:'Set', items:[
+    {key:'assist', full:'Assist', short:'Asst'},
+    {key:'setErr', full:'Error', short:'Err'},
+    {key:'setInacc', full:'Inaccurate', short:'Inacc'},
+  ]},
 ];
 
 /* ================= YOUTUBE PLAYER ================= */
@@ -671,44 +715,135 @@ function renderRoster(){
 function renderActivePlayerSelect(){
   const wrap = document.getElementById('activePlayerSelect');
   const hint = document.getElementById('rosterEmptyHint');
-  const pad = document.getElementById('actionPad');
   wrap.innerHTML = '';
   if(state.roster.length === 0){
     hint.style.display = 'block';
-    pad.classList.add('disabled-pad');
+  } else {
+    hint.style.display = 'none';
+    state.roster.forEach(p => {
+      const pill = document.createElement('button');
+      pill.className = 'player-pill' + (state.activeNum === p.num ? ' active' : '');
+      pill.textContent = `#${p.num}${p.name ? ' ' + p.name : ''}`;
+      pill.addEventListener('click', () => {
+        state.activeNum = p.num;
+        renderActivePlayerSelect();
+        renderInlineCounts();
+      });
+      wrap.appendChild(pill);
+    });
+  }
+  buildActionPad();
+  renderPlayerGrid();
+}
+
+/* Build the grouped "by action" pad once roster exists (static per group, just needs building) */
+function buildActionPad(){
+  const pad = document.getElementById('actionPad');
+  pad.classList.toggle('disabled-pad', state.roster.length === 0);
+  pad.innerHTML = ACTION_DEFS.map(g => `
+    <div class="action-group" data-group="${g.group}">
+      <span class="glabel">${g.group}</span>
+      <div class="action-btns">
+        ${g.items.map(it => `
+          <button class="stat-btn ${kindOf(it.key)}" data-stat="${it.key}">
+            ${it.full} <span class="ct" data-count="${it.key}">0</span>
+          </button>`).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function kindOf(statKey){ return STAT_META[statKey].kind; }
+
+/* Build the per-player grid: each row is one player, buttons inline */
+function renderPlayerGrid(){
+  const wrap = document.getElementById('playerGrid');
+  if(state.roster.length === 0){
+    wrap.innerHTML = '';
     return;
   }
-  hint.style.display = 'none';
-  pad.classList.remove('disabled-pad');
-  state.roster.forEach(p => {
-    const pill = document.createElement('button');
-    pill.className = 'player-pill' + (state.activeNum === p.num ? ' active' : '');
-    pill.textContent = `#${p.num}${p.name ? ' ' + p.name : ''}`;
-    pill.addEventListener('click', () => {
-      state.activeNum = p.num;
-      renderActivePlayerSelect();
-    });
-    wrap.appendChild(pill);
+  wrap.innerHTML = state.roster.map(p => `
+    <div class="player-row" data-num="${p.num}">
+      <div class="player-row-head">
+        <span class="pnum">#${p.num}</span><span class="pname">${p.name || ''}</span>
+      </div>
+      <div class="prow-groups">
+        ${ACTION_DEFS.map(g => `
+          <div class="prow-group" data-group="${g.group}">
+            <span class="prow-glabel">${g.group}</span>
+            <div class="prow-btns">
+              ${g.items.map(it => `
+                <button class="pbtn ${kindOf(it.key)}" data-stat="${it.key}" data-num="${p.num}" title="${g.group} — ${it.full}">
+                  ${it.short} <span class="pct" data-num="${p.num}" data-count="${it.key}">0</span>
+                </button>`).join('')}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ================= LAYOUT TOGGLE ================= */
+document.getElementById('modeByPlayer').addEventListener('click', () => setMode('player'));
+document.getElementById('modeByAction').addEventListener('click', () => setMode('action'));
+function setMode(mode){
+  state.mode = mode;
+  document.getElementById('modeByPlayer').classList.toggle('active', mode==='player');
+  document.getElementById('modeByAction').classList.toggle('active', mode==='action');
+  document.getElementById('playerGrid').style.display = mode==='player' ? 'flex' : 'none';
+  document.getElementById('byActionView').style.display = mode==='action' ? 'block' : 'none';
+}
+setMode('player');
+
+/* ================= TAGGING (shared by both layouts) ================= */
+function tagEvent(num, statKey, btnEl){
+  const meta = STAT_META[statKey];
+  const t = state.player && state.playerReady ? state.player.getCurrentTime() : 0;
+  state.events.push({
+    t, num, stat: statKey, label: meta.label, kind: meta.kind,
+    name: (state.roster.find(p=>p.num===num)||{}).name || ''
+  });
+  if(btnEl){
+    btnEl.classList.remove('flash');
+    requestAnimationFrame(() => btnEl.classList.add('flash'));
+    setTimeout(() => btnEl.classList.remove('flash'), 360);
+  }
+  renderBoxscore();
+  renderLog();
+  renderInlineCounts();
+}
+
+/* Update the little counters next to each button in both layouts without a full re-render */
+function renderInlineCounts(){
+  const counts = {}; // counts[num][statKey] = n
+  state.events.forEach(ev => {
+    counts[ev.num] = counts[ev.num] || {};
+    counts[ev.num][ev.stat] = (counts[ev.num][ev.stat]||0) + 1;
+  });
+  // per-player grid counters
+  document.querySelectorAll('.pct').forEach(el => {
+    const n = counts[el.dataset.num]?.[el.dataset.count] || 0;
+    el.textContent = n || '0';
+  });
+  // by-action pad counters (reflect active player only)
+  document.querySelectorAll('#actionPad .ct').forEach(el => {
+    const n = state.activeNum ? (counts[state.activeNum]?.[el.dataset.count] || 0) : 0;
+    el.textContent = n || '0';
   });
 }
 
-/* ================= TAGGING ================= */
 document.getElementById('actionPad').addEventListener('click', (e) => {
   const btn = e.target.closest('.stat-btn');
   if(!btn) return;
   if(!state.activeNum){ showToast('Select a player first'); return; }
-  const statKey = btn.dataset.stat;
-  const meta = STAT_META[statKey];
-  const t = state.player && state.playerReady ? state.player.getCurrentTime() : 0;
-  state.events.push({
-    t, num: state.activeNum, stat: statKey, label: meta.label, kind: meta.kind,
-    name: (state.roster.find(p=>p.num===state.activeNum)||{}).name || ''
-  });
-  btn.classList.remove('flash');
-  requestAnimationFrame(() => btn.classList.add('flash'));
-  setTimeout(() => btn.classList.remove('flash'), 360);
-  renderBoxscore();
-  renderLog();
+  tagEvent(state.activeNum, btn.dataset.stat, btn);
+});
+
+document.getElementById('playerGrid').addEventListener('click', (e) => {
+  const btn = e.target.closest('.pbtn');
+  if(!btn) return;
+  tagEvent(btn.dataset.num, btn.dataset.stat, btn);
 });
 
 /* ================= BOX SCORE ================= */
@@ -773,6 +908,7 @@ document.getElementById('logList').addEventListener('click', (e) => {
     state.events.splice(idx,1);
     renderBoxscore();
     renderLog();
+    renderInlineCounts();
   }
 });
 
@@ -781,6 +917,7 @@ document.getElementById('clearLogBtn').addEventListener('click', () => {
   state.events = [];
   renderBoxscore();
   renderLog();
+  renderInlineCounts();
 });
 
 /* ================= EXPORT ================= */
