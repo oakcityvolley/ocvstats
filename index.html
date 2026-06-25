@@ -31,7 +31,7 @@
     min-height:100vh;
     -webkit-font-smoothing:antialiased;
   }
-  .wrap{max-width:1320px;margin:0 auto;padding:20px 20px 80px;}
+  .wrap{max-width:1800px;margin:0 auto;padding:20px 32px 80px;}
 
   /* ---------- Header ---------- */
   header{
@@ -111,7 +111,7 @@
   .roster-chip .rm:hover{color:var(--bad);}
 
   /* ---------- Main grid ---------- */
-  .main{display:grid;grid-template-columns:1.3fr 1fr;gap:20px;align-items:start;}
+  .main{display:grid;grid-template-columns:1.6fr 1fr;gap:24px;align-items:start;}
   @media (max-width: 980px){.main{grid-template-columns:1fr;}}
 
   .video-card{
@@ -175,19 +175,21 @@
   }
   .no-roster-hint{font-size:12.5px;color:var(--text-faint);padding:6px 0 4px;}
 
-  .undo-strip{
+  .undo-bar{
     display:flex;align-items:center;justify-content:space-between;gap:12px;
-    background:rgba(245,166,35,.08);border:1px solid var(--amber-dim);border-radius:9px;
-    padding:9px 12px;margin-bottom:14px;animation:undoIn .15s ease;
+    background:var(--panel-2);border:1px solid var(--line);border-radius:9px;
+    padding:9px 12px;margin-bottom:14px;
   }
-  @keyframes undoIn{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
-  .undo-msg{font-size:12.5px;color:var(--text-dim);}
-  .undo-msg b{color:var(--text);}
+  .undo-msg{font-size:12.5px;color:var(--text-faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .undo-msg b{color:var(--text-dim);}
   .undo-btn{
     background:var(--amber);color:#1a1206;font-weight:700;font-size:12.5px;
     padding:7px 14px;border-radius:7px;flex-shrink:0;font-family:'Inter',sans-serif;
   }
-  .undo-btn:hover{box-shadow:0 0 0 1px var(--amber);}
+  .undo-btn:hover:not(:disabled){box-shadow:0 0 0 1px var(--amber);}
+  .undo-btn:disabled{
+    background:var(--card);color:var(--text-faint);cursor:default;
+  }
 
   .action-grid{
     display:grid;grid-template-columns:1fr 1fr;gap:10px;
@@ -442,9 +444,9 @@
         </span>
       </h2>
 
-      <div class="undo-strip" id="undoStrip" style="display:none;">
-        <span class="undo-msg" id="undoMsg"></span>
-        <button class="undo-btn" id="undoBtn">↺ Undo</button>
+      <div class="undo-bar">
+        <span class="undo-msg" id="undoMsg">No events tagged yet</span>
+        <button class="undo-btn" id="undoBtn" disabled>↺ Undo last tag</button>
       </div>
 
       <div id="rosterEmptyHint" class="no-roster-hint">Add players to your roster above to start tagging.</div>
@@ -498,9 +500,12 @@ const STAT_META = {
   recPerfect: {label:'Perfect pass', kind:'good'},
   assist:     {label:'Assist', kind:'good'},
   kill:       {label:'Kill', kind:'good'},
+  forcedErr:  {label:'Forced error', kind:'good'},
   setErr:     {label:'Set error', kind:'bad'},
   setInacc:   {label:'Inaccurate set', kind:'bad'},
   dig:        {label:'Dig', kind:'good'},
+  save:       {label:'Save', kind:'good'},
+  pancake:    {label:'Pancake', kind:'good'},
 };
 
 const BOX_COLUMNS = [
@@ -509,11 +514,14 @@ const BOX_COLUMNS = [
   {key:'recPerfect', label:'PP'},
   {key:'recErr', label:'RE'},
   {key:'kill', label:'K'},
+  {key:'forcedErr', label:'FE'},
   {key:'block', label:'BLK'},
   {key:'assist', label:'AST'},
   {key:'setErr', label:'STE'},
   {key:'setInacc', label:'INS'},
   {key:'dig', label:'DIG'},
+  {key:'save', label:'SV'},
+  {key:'pancake', label:'PAN'},
 ];
 
 /* Shared source of truth for both layouts: grouped (for "by action" view)
@@ -529,6 +537,7 @@ const ACTION_DEFS = [
   ]},
   {group:'Attack', items:[
     {key:'kill', full:'Kill', short:'Kill'},
+    {key:'forcedErr', full:'Forced error', short:'F.Err'},
   ]},
   {group:'Block', items:[
     {key:'block', full:'Block', short:'Blk'},
@@ -540,6 +549,8 @@ const ACTION_DEFS = [
   ]},
   {group:'Defense', items:[
     {key:'dig', full:'Dig', short:'Dig'},
+    {key:'save', full:'Save', short:'Save'},
+    {key:'pancake', full:'Pancake', short:'Pan'},
   ]},
 ];
 
@@ -838,19 +849,26 @@ function tagEvent(num, statKey, btnEl){
   renderBoxscore();
   renderLog();
   renderInlineCounts();
-  showUndoStrip(state.events[state.events.length-1]);
+  refreshUndoBar();
 }
 
 /* ================= UNDO ================= */
-let undoHideTimer = null;
-function showUndoStrip(ev){
-  const strip = document.getElementById('undoStrip');
+/* Bar is always present at a fixed position; we just update its text/disabled state in place
+   so the layout never shifts when tagging or undoing. */
+function refreshUndoBar(){
   const msg = document.getElementById('undoMsg');
+  const btn = document.getElementById('undoBtn');
+  if(state.events.length === 0){
+    msg.textContent = 'No events tagged yet';
+    btn.disabled = true;
+    btn.textContent = '↺ Undo last tag';
+    return;
+  }
+  const ev = state.events[state.events.length - 1];
   const who = ev.name ? `#${ev.num} ${ev.name}` : `#${ev.num}`;
-  msg.innerHTML = `Tagged <b>${ev.label}</b> for <b>${who}</b> at ${fmtTime(ev.t)}`;
-  strip.style.display = 'flex';
-  clearTimeout(undoHideTimer);
-  undoHideTimer = setTimeout(() => { strip.style.display = 'none'; }, 6000);
+  msg.innerHTML = `Last: <b>${ev.label}</b> — ${who} at ${fmtTime(ev.t)}`;
+  btn.disabled = false;
+  btn.textContent = '↺ Undo last tag';
 }
 
 document.getElementById('undoBtn').addEventListener('click', () => {
@@ -859,8 +877,7 @@ document.getElementById('undoBtn').addEventListener('click', () => {
   renderBoxscore();
   renderLog();
   renderInlineCounts();
-  document.getElementById('undoStrip').style.display = 'none';
-  clearTimeout(undoHideTimer);
+  refreshUndoBar();
   const who = removed.name ? `#${removed.num} ${removed.name}` : `#${removed.num}`;
   showToast(`Removed: ${removed.label} — ${who}`);
 });
@@ -969,7 +986,7 @@ document.getElementById('logList').addEventListener('click', (e) => {
     renderBoxscore();
     renderLog();
     renderInlineCounts();
-    document.getElementById('undoStrip').style.display = 'none';
+    refreshUndoBar();
   }
 });
 
@@ -979,7 +996,7 @@ document.getElementById('clearLogBtn').addEventListener('click', () => {
   renderBoxscore();
   renderLog();
   renderInlineCounts();
-  document.getElementById('undoStrip').style.display = 'none';
+  refreshUndoBar();
 });
 
 /* ================= EXPORT ================= */
@@ -1033,6 +1050,7 @@ renderRoster();
 renderActivePlayerSelect();
 renderBoxscore();
 renderLog();
+refreshUndoBar();
 </script>
 </body>
 </html>
