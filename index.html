@@ -329,6 +329,40 @@
     display:flex;justify-content:space-between;align-items:center;
   }
   .log-list{max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;}
+
+  /* ---------- Legend ---------- */
+  .legend-card{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:18px 18px 16px;margin-top:20px;
+  }
+  .legend-card h2{
+    font-family:'Space Grotesk',sans-serif;font-size:13px;margin:0 0 14px;
+    color:var(--text-dim);font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+  }
+  .legend-groups{display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:14px;}
+  .legend-group{
+    background:var(--panel-2);border:1px solid var(--line);border-radius:10px;
+    padding:10px 12px;border-top:2.5px solid var(--line);
+  }
+  .legend-group[data-group="Serve"]{border-top-color:#5B9BD5;}
+  .legend-group[data-group="Reception"]{border-top-color:#9B7EDE;}
+  .legend-group[data-group="Attack"]{border-top-color:#F5A623;}
+  .legend-group[data-group="Block"]{border-top-color:#4ADE80;}
+  .legend-group[data-group="Set"]{border-top-color:#E86A92;}
+  .legend-group[data-group="Defense"]{border-top-color:#5ED9C7;}
+  .legend-glabel{
+    font-size:10.5px;color:var(--text-faint);letter-spacing:.06em;text-transform:uppercase;
+    font-family:'JetBrains Mono',monospace;margin-bottom:8px;display:block;
+  }
+  .legend-row{
+    display:flex;align-items:baseline;gap:8px;padding:3px 0;font-size:12.5px;
+  }
+  .legend-abbr{
+    font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--amber);
+    min-width:34px;flex-shrink:0;
+  }
+  .legend-full{color:var(--text-dim);}
+
   .log-item{
     display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--panel-2);
     border-radius:8px;font-size:12.5px;
@@ -420,9 +454,9 @@
         </div>
       </div>
       <div class="video-controls">
-        <button class="seek-btn" id="back10">« 10s</button>
+        <button class="seek-btn" id="back10" title="Left arrow key">« 10s</button>
         <button class="play-btn" id="playPauseBtn">▶</button>
-        <button class="seek-btn" id="fwd10">10s »</button>
+        <button class="seek-btn" id="fwd10" title="Right arrow key">10s »</button>
         <select class="speed-select" id="speedSelect">
           <option value="0.5">0.5×</option>
           <option value="0.75">0.75×</option>
@@ -468,6 +502,12 @@
     <div id="boxscoreWrap"></div>
   </div>
 
+  <!-- LEGEND -->
+  <div class="legend-card">
+    <h2>Stat Legend</h2>
+    <div id="legendWrap"></div>
+  </div>
+
   <!-- EVENT LOG -->
   <div class="log-card">
     <h2>Event Log <button class="btn-small" id="clearLogBtn">Clear all</button></h2>
@@ -496,7 +536,9 @@ const STAT_META = {
   ace:        {label:'Ace', kind:'good'},
   serveErr:   {label:'Service error', kind:'bad'},
   recErr:     {label:'Reception error', kind:'bad'},
-  block:      {label:'Block', kind:'good'},
+  block:      {label:'Block touch', kind:'good'},
+  blockKill:  {label:'Block kill', kind:'good'},
+  blockErr:   {label:'Block error', kind:'bad'},
   recPerfect: {label:'Perfect pass', kind:'good'},
   assist:     {label:'Assist', kind:'good'},
   kill:       {label:'Kill', kind:'good'},
@@ -516,6 +558,8 @@ const BOX_COLUMNS = [
   {key:'kill', label:'K'},
   {key:'forcedErr', label:'FE'},
   {key:'block', label:'BLK'},
+  {key:'blockKill', label:'BK'},
+  {key:'blockErr', label:'BE'},
   {key:'assist', label:'AST'},
   {key:'setErr', label:'STE'},
   {key:'setInacc', label:'INS'},
@@ -540,7 +584,9 @@ const ACTION_DEFS = [
     {key:'forcedErr', full:'Forced error', short:'F.Err'},
   ]},
   {group:'Block', items:[
-    {key:'block', full:'Block', short:'Blk'},
+    {key:'block', full:'Block touch', short:'Blk'},
+    {key:'blockKill', full:'Block kill', short:'B.Kill'},
+    {key:'blockErr', full:'Error', short:'Err'},
   ]},
   {group:'Set', items:[
     {key:'assist', full:'Assist', short:'Asst'},
@@ -679,25 +725,29 @@ document.getElementById('playPauseBtn').addEventListener('click', () => {
   if(s === YT.PlayerState.PLAYING) state.player.pauseVideo();
   else state.player.playVideo();
 });
-document.getElementById('back10').addEventListener('click', () => {
-  if(!state.player) return;
-  state.player.seekTo(Math.max(0, state.player.getCurrentTime()-10), true);
-});
-document.getElementById('fwd10').addEventListener('click', () => {
-  if(!state.player) return;
-  state.player.seekTo(state.player.getCurrentTime()+10, true);
-});
+function seekBy(deltaSeconds){
+  if(!state.player || !state.playerReady) return;
+  state.player.seekTo(Math.max(0, state.player.getCurrentTime() + deltaSeconds), true);
+}
+document.getElementById('back10').addEventListener('click', () => seekBy(-10));
+document.getElementById('fwd10').addEventListener('click', () => seekBy(10));
 document.getElementById('speedSelect').addEventListener('change', (e) => {
   if(!state.player) return;
   state.player.setPlaybackRate(parseFloat(e.target.value));
 });
 
-/* keyboard: space toggles play/pause when not typing in a field */
+/* keyboard: space toggles play/pause, left/right arrows seek ±10s — only when not typing in a field */
 document.addEventListener('keydown', (e) => {
   if(['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return;
   if(e.code === 'Space'){
     e.preventDefault();
     document.getElementById('playPauseBtn').click();
+  } else if(e.code === 'ArrowLeft'){
+    e.preventDefault();
+    seekBy(-10);
+  } else if(e.code === 'ArrowRight'){
+    e.preventDefault();
+    seekBy(10);
   }
 });
 
@@ -1045,12 +1095,36 @@ function showToast(msg){
   toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
 }
 
+/* ================= LEGEND ================= */
+/* Built directly from ACTION_DEFS + BOX_COLUMNS so it can never drift out of
+   sync with the actual tracked stats — add/remove a stat up there and this updates itself. */
+function renderLegend(){
+  const boxLabelByKey = {};
+  BOX_COLUMNS.forEach(c => { boxLabelByKey[c.key] = c.label; });
+
+  const wrap = document.getElementById('legendWrap');
+  wrap.innerHTML = `<div class="legend-groups">${
+    ACTION_DEFS.map(g => `
+      <div class="legend-group" data-group="${g.group}">
+        <span class="legend-glabel">${g.group}</span>
+        ${g.items.map(it => `
+          <div class="legend-row">
+            <span class="legend-abbr">${boxLabelByKey[it.key] || ''}</span>
+            <span class="legend-full">${STAT_META[it.key].label}</span>
+          </div>
+        `).join('')}
+      </div>
+    `).join('')
+  }</div>`;
+}
+
 /* ================= INIT ================= */
 renderRoster();
 renderActivePlayerSelect();
 renderBoxscore();
 renderLog();
 refreshUndoBar();
+renderLegend();
 </script>
 </body>
 </html>
