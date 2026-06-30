@@ -113,6 +113,8 @@
   /* ---------- Main grid ---------- */
   .main{display:grid;grid-template-columns:1.6fr 1fr;gap:24px;align-items:start;}
   @media (max-width: 980px){.main{grid-template-columns:1fr;}}
+  .main.pad-expanded{grid-template-columns:1fr;}
+  .main.pad-expanded .video-card{max-width:900px;margin:0 auto;width:100%;}
 
   .video-card{
     background:var(--panel);border:1px solid var(--line);border-radius:14px;
@@ -241,44 +243,46 @@
   .toggle-btn.active{background:var(--amber);border-color:var(--amber);color:#1a1206;}
 
   /* ---------- Per-player grid ---------- */
-  .player-grid{display:flex;flex-direction:column;gap:10px;max-height:640px;overflow-y:auto;padding-right:4px;}
+  .player-grid{
+    display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));
+    gap:8px;max-height:none;
+  }
   .player-row{
-    background:var(--panel-2);border:1px solid var(--line);border-radius:10px;
-    padding:10px 12px;
+    background:var(--panel-2);border:1px solid var(--line);border-radius:9px;
+    padding:8px 9px;
   }
   .player-row-head{
-    display:flex;align-items:baseline;gap:8px;margin-bottom:8px;
+    display:flex;align-items:baseline;gap:6px;margin-bottom:6px;
   }
   .player-row-head .pnum{
-    font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--amber);font-size:14px;
+    font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--amber);font-size:13px;
   }
-  .player-row-head .pname{font-size:13px;color:var(--text-dim);}
-  .prow-groups{display:flex;flex-wrap:wrap;gap:8px;}
+  .player-row-head .pname{font-size:12px;color:var(--text-dim);}
+  .prow-groups{display:flex;flex-direction:column;gap:4px;}
   .prow-group{
-    background:var(--panel);border:1px solid var(--line);border-radius:8px;
-    padding:6px 7px 7px;display:flex;flex-direction:column;gap:5px;
-    border-top:2px solid var(--line);
+    display:flex;align-items:center;gap:6px;
+    border-left:2.5px solid var(--line);padding:1px 0 1px 6px;
   }
-  .prow-group[data-group="Serve"]{border-top-color:#5B9BD5;}
-  .prow-group[data-group="Reception"]{border-top-color:#9B7EDE;}
-  .prow-group[data-group="Attack"]{border-top-color:#F5A623;}
-  .prow-group[data-group="Block"]{border-top-color:#4ADE80;}
-  .prow-group[data-group="Set"]{border-top-color:#E86A92;}
-  .prow-group[data-group="Defense"]{border-top-color:#5ED9C7;}
+  .prow-group[data-group="Serve"]{border-left-color:#5B9BD5;}
+  .prow-group[data-group="Reception"]{border-left-color:#9B7EDE;}
+  .prow-group[data-group="Attack"]{border-left-color:#F5A623;}
+  .prow-group[data-group="Block"]{border-left-color:#4ADE80;}
+  .prow-group[data-group="Set"]{border-left-color:#E86A92;}
+  .prow-group[data-group="Defense"]{border-left-color:#5ED9C7;}
   .prow-glabel{
-    font-size:9.5px;color:var(--text-faint);letter-spacing:.06em;text-transform:uppercase;
-    font-family:'JetBrains Mono',monospace;padding-left:1px;
+    font-size:8.5px;color:var(--text-faint);letter-spacing:.04em;text-transform:uppercase;
+    font-family:'JetBrains Mono',monospace;width:34px;flex-shrink:0;line-height:1.2;
   }
-  .prow-btns{display:flex;flex-wrap:wrap;gap:5px;}
+  .prow-btns{display:flex;flex-wrap:wrap;gap:4px;flex:1;}
   .pbtn{
     background:var(--card);border:1px solid var(--line);color:var(--text);
-    font-size:11.5px;font-weight:600;padding:7px 9px;border-radius:7px;
-    font-family:'Inter',sans-serif;display:flex;align-items:center;gap:5px;
-    white-space:nowrap;
+    font-size:10.5px;font-weight:600;padding:5px 7px;border-radius:6px;
+    font-family:'Inter',sans-serif;display:flex;align-items:center;gap:4px;
+    white-space:nowrap;line-height:1.1;
   }
   .pbtn .pct{
-    font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;
-    color:var(--text-faint);min-width:11px;text-align:center;
+    font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;
+    color:var(--text-faint);min-width:10px;text-align:center;
   }
   .pbtn:hover{background:var(--card-hover);}
   .pbtn.good:hover{box-shadow:inset 0 0 0 1.5px var(--good);}
@@ -878,8 +882,9 @@ function setMode(mode){
   state.mode = mode;
   document.getElementById('modeByPlayer').classList.toggle('active', mode==='player');
   document.getElementById('modeByAction').classList.toggle('active', mode==='action');
-  document.getElementById('playerGrid').style.display = mode==='player' ? 'flex' : 'none';
+  document.getElementById('playerGrid').style.display = mode==='player' ? 'grid' : 'none';
   document.getElementById('byActionView').style.display = mode==='action' ? 'block' : 'none';
+  document.querySelector('.main').classList.toggle('pad-expanded', mode==='player');
 }
 setMode('player');
 
