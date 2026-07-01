@@ -22,6 +22,24 @@
     --text-dim:#9A9DA6;
     --text-faint:#62656d;
   }
+  :root.light{
+    --bg:#F0F2F5;
+    --panel:#FFFFFF;
+    --panel-2:#F7F8FA;
+    --card:#ECEEF2;
+    --card-hover:#E2E5EA;
+    --line:#D4D7DE;
+    --amber:#D4880A;
+    --amber-dim:#f0d9b0;
+    --good:#16A34A;
+    --bad:#DC2626;
+    --text:#1A1D23;
+    --text-dim:#4B5060;
+    --text-faint:#8C909A;
+  }
+  *{box-sizing:border-box;transition:background-color .2s ease, border-color .2s ease, color .15s ease, box-shadow .15s ease;}
+  /* prevent transition on elements that shouldn't animate color */
+  button{transition:background-color .12s ease, border-color .12s ease, color .12s ease, box-shadow .12s ease, transform .08s ease;}
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
@@ -51,8 +69,73 @@
   .matchclock{
     font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text-dim);
   }
+  .header-right{display:flex;align-items:center;gap:12px;}
+  .theme-toggle{
+    background:var(--card);border:1px solid var(--line);color:var(--text-dim);
+    font-size:16px;width:34px;height:34px;border-radius:8px;
+    display:flex;align-items:center;justify-content:center;padding:0;
+    line-height:1;cursor:pointer;flex-shrink:0;
+  }
+  .theme-toggle:hover{color:var(--text);border-color:var(--text-dim);}
+  :root.light .theme-toggle{content:'☾';}
 
   /* ---------- Setup panel ---------- */
+  /* ---------- Team Manager ---------- */
+  .team-manager{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    margin-bottom:14px;overflow:hidden;
+  }
+  .tm-header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 20px;cursor:pointer;user-select:none;
+  }
+  .tm-header:hover{background:var(--panel-2);}
+  .tm-title{
+    display:flex;align-items:center;gap:8px;
+    font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;
+    color:var(--text-dim);letter-spacing:.04em;text-transform:uppercase;
+  }
+  .tm-toggle-icon{color:var(--text-faint);font-size:12px;transition:transform .2s;}
+  .tm-toggle-icon.open{transform:rotate(180deg);}
+  .tm-body{padding:0 20px 18px;border-top:1px solid var(--line);}
+  .tm-teams-row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;padding-top:16px;}
+  .tm-team-list{display:flex;flex-wrap:wrap;gap:8px;flex:1;}
+  .tm-team-pill{
+    background:var(--card);border:1.5px solid var(--line);border-radius:8px;
+    color:var(--text-dim);font-size:13px;font-weight:600;padding:8px 14px;cursor:pointer;
+    font-family:'Inter',sans-serif;
+  }
+  .tm-team-pill:hover{border-color:var(--text-dim);color:var(--text);}
+  .tm-team-pill.active{background:var(--amber);border-color:var(--amber);color:#1a1206;}
+  .tm-new-team{display:flex;gap:8px;align-items:flex-end;}
+  .tm-edit-panel{
+    margin-top:16px;background:var(--panel-2);border:1px solid var(--line);
+    border-radius:10px;padding:14px 16px;
+  }
+  .tm-edit-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+  .tm-edit-title{font-weight:700;font-size:15px;color:var(--text);}
+  .tm-player-add{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:flex-end;}
+  .tm-player-list{display:flex;flex-wrap:wrap;gap:7px;}
+  .btn-danger{background:transparent;border:1px solid var(--bad);color:var(--bad);font-size:12px;padding:7px 10px;}
+  .btn-danger:hover{background:var(--bad);color:#fff;}
+
+  /* ---------- Lineup section (match setup) ---------- */
+  .lineup-section{
+    margin-top:16px;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;
+  }
+  .lineup-header{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+  .lineup-label{font-weight:700;font-size:13px;color:var(--text);flex:1;}
+  .lineup-grid{display:flex;flex-wrap:wrap;gap:7px;}
+  .lineup-chip{
+    display:flex;align-items:center;gap:7px;background:var(--card);
+    border:1.5px solid var(--line);border-radius:8px;padding:7px 11px;
+    cursor:pointer;font-size:13px;user-select:none;
+  }
+  .lineup-chip:hover{border-color:var(--text-dim);}
+  .lineup-chip.selected{border-color:var(--amber);background:rgba(245,166,35,.1);}
+  .lineup-chip .lnum{font-family:'JetBrains Mono',monospace;color:var(--amber);font-weight:700;}
+  .lineup-chip input[type=checkbox]{accent-color:var(--amber);width:14px;height:14px;}
+
   .setup{
     background:var(--panel);border:1px solid var(--line);border-radius:14px;
     padding:20px 22px;margin-bottom:20px;
@@ -109,13 +192,45 @@
     font-size:15px;line-height:1;padding:0 2px;
   }
   .roster-chip .rm:hover{color:var(--bad);}
+  /* Position badges — color coded per position */
+  .pos-badge{
+    font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;
+    border-radius:4px;padding:1px 5px;letter-spacing:.03em;border:1px solid transparent;
+  }
+  .pos-S   {background:rgba(155,126,222,.18);color:#9B7EDE;border-color:rgba(155,126,222,.35);}
+  .pos-OH  {background:rgba(245,166,35,.18); color:#F5A623;border-color:rgba(245,166,35,.35);}
+  .pos-OPP {background:rgba(249,115,22,.18); color:#F97316;border-color:rgba(249,115,22,.35);}
+  .pos-MB  {background:rgba(74,222,128,.18); color:#4ADE80;border-color:rgba(74,222,128,.35);}
+  .pos-L   {background:rgba(94,217,199,.18); color:#5ED9C7;border-color:rgba(94,217,199,.35);}
+  .pos-DS  {background:rgba(91,155,213,.18); color:#5B9BD5;border-color:rgba(91,155,213,.35);}
+  /* Light mode badge adjustments */
+  :root.light .pos-S   {background:rgba(155,126,222,.12);color:#7B5AC7;}
+  :root.light .pos-OH  {background:rgba(245,166,35,.12); color:#B8720A;}
+  :root.light .pos-OPP {background:rgba(249,115,22,.12); color:#C2580A;}
+  :root.light .pos-MB  {background:rgba(74,222,128,.12); color:#15803D;}
+  :root.light .pos-L   {background:rgba(94,217,199,.12); color:#0F7A6E;}
+  :root.light .pos-DS  {background:rgba(91,155,213,.12); color:#2A6FA8;}
+  /* Position toggle picker */
+  .pos-toggles{display:flex;flex-wrap:wrap;gap:5px;}
+  .pos-toggle{
+    font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;
+    padding:5px 9px;border-radius:6px;cursor:pointer;border:1.5px solid var(--line);
+    background:var(--card);color:var(--text-faint);letter-spacing:.03em;
+    transition:all .12s;
+  }
+  .pos-toggle:hover{border-color:var(--text-dim);color:var(--text);}
+  .pos-toggle.sel-S   {background:rgba(155,126,222,.2);color:#9B7EDE;border-color:#9B7EDE;}
+  .pos-toggle.sel-OH  {background:rgba(245,166,35,.2); color:#F5A623;border-color:#F5A623;}
+  .pos-toggle.sel-OPP {background:rgba(249,115,22,.2); color:#F97316;border-color:#F97316;}
+  .pos-toggle.sel-MB  {background:rgba(74,222,128,.2); color:#4ADE80;border-color:#4ADE80;}
+  .pos-toggle.sel-L   {background:rgba(94,217,199,.2); color:#5ED9C7;border-color:#5ED9C7;}
+  .pos-toggle.sel-DS  {background:rgba(91,155,213,.2); color:#5B9BD5;border-color:#5B9BD5;}
 
   /* ---------- Main grid ---------- */
   .main{display:grid;grid-template-columns:1.6fr 1fr;gap:24px;align-items:start;}
   @media (max-width: 980px){.main{grid-template-columns:1fr;}}
   .main.pad-expanded{grid-template-columns:1fr;}
   .main.pad-expanded .video-card{max-width:900px;margin:0 auto;width:100%;}
-
   .video-card{
     background:var(--panel);border:1px solid var(--line);border-radius:14px;
     overflow:hidden;
@@ -415,8 +530,48 @@
       <h1>Stat Console</h1>
       <span class="tag">Volleyball Match Tagger</span>
     </div>
-    <div class="matchclock" id="headerClock">No video loaded</div>
+    <div class="header-right">
+      <button class="theme-toggle" id="themeToggle" title="Toggle light/dark mode">☀︎</button>
+      <div class="matchclock" id="headerClock">No video loaded</div>
+    </div>
   </header>
+
+  <!-- TEAM MANAGER -->
+  <div class="team-manager" id="teamManager">
+    <div class="tm-header" id="tmToggle">
+      <span class="tm-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Team Manager
+      </span>
+      <span class="tm-toggle-icon" id="tmToggleIcon">▾</span>
+    </div>
+    <div class="tm-body" id="tmBody">
+      <div class="tm-teams-row">
+        <div class="tm-team-list" id="tmTeamList"></div>
+        <div class="tm-new-team">
+          <input type="text" id="newTeamName" placeholder="New team name…" style="width:180px;">
+          <button class="btn-primary" id="addTeamBtn">+ Add team</button>
+        </div>
+      </div>
+
+      <div class="tm-edit-panel" id="tmEditPanel" style="display:none;">
+        <div class="tm-edit-header">
+          <span class="tm-edit-title" id="tmEditTitle"></span>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-small" id="tmRenameBtn">Rename</button>
+            <button class="btn-small btn-danger" id="tmDeleteBtn">Delete team</button>
+          </div>
+        </div>
+        <div class="tm-player-add">
+          <input type="text" id="tmNewNum" placeholder="#" maxlength="3" style="width:60px;">
+          <input type="text" id="tmNewName" placeholder="Player name" style="width:160px;">
+          <div class="pos-toggles" id="tmPosPicker"></div>
+          <button class="btn-ghost" id="tmAddPlayerBtn">+ Add player</button>
+        </div>
+        <div class="tm-player-list" id="tmPlayerList"></div>
+      </div>
+    </div>
+  </div>
 
   <!-- SETUP -->
   <div class="setup">
@@ -433,15 +588,27 @@
       <button class="btn-primary" id="loadVideoBtn">Load video</button>
     </div>
 
+    <!-- Saved team loader -->
+    <div class="lineup-section" id="lineupSection" style="display:none;">
+      <div class="lineup-header">
+        <span class="lineup-label" id="lineupTeamName"></span>
+        <button class="btn-small" id="lineupSelectAll">All</button>
+        <button class="btn-small" id="lineupSelectNone">None</button>
+        <button class="btn-primary" id="lineupConfirmBtn">Load lineup →</button>
+      </div>
+      <div class="lineup-grid" id="lineupGrid"></div>
+    </div>
+
     <div class="row" style="margin-top:18px;">
       <div class="field">
-        <label>Add player</label>
+        <label>Add player manually</label>
         <div class="roster-input">
           <input type="text" id="newNum" placeholder="#" maxlength="3">
           <input type="text" class="name" id="newName" placeholder="Name (optional)">
+          <div class="pos-toggles" id="matchPosPicker"></div>
         </div>
       </div>
-      <button class="btn-ghost" id="addPlayerBtn">+ Add to roster</button>
+      <button class="btn-ghost" id="addPlayerBtn">+ Add to match</button>
     </div>
 
     <div class="roster-list" id="rosterList"></div>
@@ -450,7 +617,7 @@
   <!-- MAIN -->
   <div class="main">
     <div class="video-card">
-      <div class="video-frame-outer">
+      <div class="video-frame-outer" id="videoFrame">
         <div id="yt-player"></div>
         <div class="video-empty" id="videoEmptyState">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="12" cy="12" r="9"/><path d="M10 9l5 3-5 3V9z"/></svg>
@@ -528,12 +695,50 @@
 
 <script>
 /* ================= STATE ================= */
+/* ================= POSITIONS ================= */
+const POSITIONS = ['S','OH','OPP','MB','L','DS'];
+
+/* Build a set of toggle buttons into a container, tracking selection in a local Set */
+function buildPosPicker(containerId, selectedSet, onChange){
+  const wrap = document.getElementById(containerId);
+  wrap.innerHTML = '';
+  POSITIONS.forEach(pos => {
+    const btn = document.createElement('button');
+    btn.className = 'pos-toggle' + (selectedSet.has(pos) ? ` sel-${pos}` : '');
+    btn.textContent = pos;
+    btn.type = 'button';
+    btn.addEventListener('click', () => {
+      if(selectedSet.has(pos)) selectedSet.delete(pos);
+      else selectedSet.add(pos);
+      buildPosPicker(containerId, selectedSet, onChange);
+      if(onChange) onChange();
+    });
+    wrap.appendChild(btn);
+  });
+}
+
+/* Render one or more color-coded badges for a player's positions */
+function renderPosBadges(positions){
+  if(!positions) return '';
+  /* backward compat: pos may be a legacy string from old saved data */
+  const arr = Array.isArray(positions) ? positions : (positions ? [positions] : []);
+  if(arr.length === 0) return '';
+  return arr.map(p => `<span class="pos-badge pos-${p}">${p}</span>`).join('');
+}
+
+/* Temporary sets for the two add-player pickers */
+const tmPickerSel = new Set();
+const matchPickerSel = new Set();
+
 const state = {
-  roster: [],          // {num, name}
+  roster: [],          // {num, name} — current match's active players only
   activeNum: null,
-  events: [],           // {t, num, stat, label, kind}
+  events: [],          // {t, num, stat, label, kind}
   player: null,
   playerReady: false,
+  teams: [],           // [{id, name, players:[{num,name}]}]
+  activeTeamId: null,  // which team is selected in team manager
+  lineupSelected: new Set(), // jersey nums checked for current match
 };
 
 const STAT_META = {
@@ -755,22 +960,261 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+/* ================= TEAM MANAGER ================= */
+
+function teamsLoad(){
+  try {
+    const raw = localStorage.getItem('statConsoleTeams');
+    if(raw) state.teams = JSON.parse(raw);
+  } catch(e){}
+}
+
+function teamsSave(){
+  try { localStorage.setItem('statConsoleTeams', JSON.stringify(state.teams)); } catch(e){}
+}
+
+function teamById(id){ return state.teams.find(t => t.id === id); }
+
+function teamCreate(name){
+  name = name.trim();
+  if(!name) return;
+  const id = 'team_' + Date.now();
+  state.teams.push({id, name, players:[]});
+  teamsSave();
+  state.activeTeamId = id;
+  renderTeamManager();
+  showToast(`Team "${name}" created`);
+}
+
+function teamDelete(id){
+  const t = teamById(id);
+  if(!t || !confirm(`Delete "${t.name}" and all its players? This cannot be undone.`)) return;
+  state.teams = state.teams.filter(t => t.id !== id);
+  if(state.activeTeamId === id) state.activeTeamId = null;
+  teamsSave();
+  renderTeamManager();
+  renderLineupSection();
+  showToast('Team deleted');
+}
+
+function teamRename(id){
+  const t = teamById(id);
+  if(!t) return;
+  const name = prompt('New team name:', t.name);
+  if(!name || !name.trim()) return;
+  t.name = name.trim();
+  teamsSave();
+  renderTeamManager();
+  renderLineupSection();
+}
+
+function teamAddPlayer(teamId, num, name, positions){
+  num = num.trim();
+  if(!num) return;
+  const t = teamById(teamId);
+  if(!t) return;
+  if(t.players.some(p => p.num === num)){
+    showToast(`#${num} already on this roster`); return;
+  }
+  t.players.push({num, name: name.trim(), pos: [...positions]});
+  teamsSave();
+  renderTeamEditPanel(teamId);
+  renderLineupSection();
+  document.getElementById('tmNewNum').value = '';
+  document.getElementById('tmNewName').value = '';
+  tmPickerSel.clear();
+  buildPosPicker('tmPosPicker', tmPickerSel);
+  document.getElementById('tmNewNum').focus();
+}
+
+function teamRemovePlayer(teamId, num){
+  const t = teamById(teamId);
+  if(!t) return;
+  t.players = t.players.filter(p => p.num !== num);
+  teamsSave();
+  renderTeamEditPanel(teamId);
+  renderLineupSection();
+}
+
+/* ---- Render team manager UI ---- */
+function renderTeamManager(){
+  const list = document.getElementById('tmTeamList');
+  list.innerHTML = '';
+  if(state.teams.length === 0){
+    list.innerHTML = `<span style="font-size:12.5px;color:var(--text-faint);">No teams yet — create one to get started.</span>`;
+  } else {
+    state.teams.forEach(t => {
+      const pill = document.createElement('button');
+      pill.className = 'tm-team-pill' + (state.activeTeamId === t.id ? ' active' : '');
+      pill.textContent = t.name;
+      pill.addEventListener('click', () => {
+        state.activeTeamId = t.id;
+        renderTeamManager();
+      });
+      list.appendChild(pill);
+    });
+  }
+  const activeTeam = teamById(state.activeTeamId);
+  const panel = document.getElementById('tmEditPanel');
+  if(activeTeam){
+    panel.style.display = 'block';
+    renderTeamEditPanel(state.activeTeamId);
+  } else {
+    panel.style.display = 'none';
+  }
+}
+
+function renderTeamEditPanel(teamId){
+  const t = teamById(teamId);
+  if(!t) return;
+  document.getElementById('tmEditTitle').textContent = t.name;
+  const list = document.getElementById('tmPlayerList');
+  list.innerHTML = '';
+  if(t.players.length === 0){
+    list.innerHTML = `<span style="font-size:12.5px;color:var(--text-faint);">No players yet.</span>`;
+    return;
+  }
+  t.players.forEach(p => {
+    const chip = document.createElement('div');
+    chip.className = 'roster-chip';
+    chip.innerHTML = `<span class="num">#${p.num}</span><span>${p.name || ''}</span>${renderPosBadges(p.pos)}`;
+    const rm = document.createElement('button');
+    rm.className = 'rm'; rm.textContent = '×';
+    rm.addEventListener('click', () => teamRemovePlayer(teamId, p.num));
+    chip.appendChild(rm);
+    list.appendChild(chip);
+  });
+}
+
+/* ---- Team manager toggle ---- */
+let tmOpen = false;
+function setTmOpen(open){
+  tmOpen = open;
+  document.getElementById('tmBody').style.display = open ? 'block' : 'none';
+  document.getElementById('tmToggleIcon').classList.toggle('open', open);
+}
+document.getElementById('tmToggle').addEventListener('click', () => setTmOpen(!tmOpen));
+
+/* ---- Team manager buttons ---- */
+document.getElementById('addTeamBtn').addEventListener('click', () => {
+  teamCreate(document.getElementById('newTeamName').value);
+  document.getElementById('newTeamName').value = '';
+});
+document.getElementById('newTeamName').addEventListener('keydown', e => {
+  if(e.key === 'Enter') document.getElementById('addTeamBtn').click();
+});
+document.getElementById('tmAddPlayerBtn').addEventListener('click', () => {
+  if(!state.activeTeamId) return;
+  teamAddPlayer(state.activeTeamId, document.getElementById('tmNewNum').value, document.getElementById('tmNewName').value, tmPickerSel);
+});
+document.getElementById('tmNewName').addEventListener('keydown', e => {
+  if(e.key === 'Enter') document.getElementById('tmAddPlayerBtn').click();
+});
+document.getElementById('tmNewNum').addEventListener('keydown', e => {
+  if(e.key === 'Enter') document.getElementById('tmAddPlayerBtn').click();
+});
+document.getElementById('tmRenameBtn').addEventListener('click', () => {
+  if(state.activeTeamId) teamRename(state.activeTeamId);
+});
+document.getElementById('tmDeleteBtn').addEventListener('click', () => {
+  if(state.activeTeamId) teamDelete(state.activeTeamId);
+});
+
+/* ================= LINEUP SECTION ================= */
+/* Shows up in Match Setup once a team exists — pick who's playing today */
+
+function renderLineupSection(){
+  const section = document.getElementById('lineupSection');
+  /* Find the most recently edited team to show by default, or the only team */
+  const teams = state.teams;
+  if(teams.length === 0){ section.style.display = 'none'; return; }
+
+  /* Use activeTeamId if set and has players, otherwise first team with players */
+  let t = teamById(state.activeTeamId);
+  if(!t || t.players.length === 0) t = teams.find(t => t.players.length > 0);
+  if(!t){ section.style.display = 'none'; return; }
+
+  section.style.display = 'block';
+
+  /* Team name with a switcher if multiple teams exist */
+  const label = document.getElementById('lineupTeamName');
+  if(teams.length > 1){
+    label.innerHTML = teams.map(team =>
+      `<button class="tm-team-pill${team.id===t.id?' active':''}" style="font-size:11.5px;padding:5px 10px;" data-tid="${team.id}">${team.name}</button>`
+    ).join('');
+    label.querySelectorAll('[data-tid]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.activeTeamId = btn.dataset.tid;
+        state.lineupSelected = new Set();
+        renderLineupSection();
+      });
+    });
+  } else {
+    label.textContent = t.name;
+  }
+
+  /* Pre-select all players if lineupSelected is empty (first load for this team) */
+  if(state.lineupSelected.size === 0) t.players.forEach(p => state.lineupSelected.add(p.num));
+
+  const grid = document.getElementById('lineupGrid');
+  grid.innerHTML = '';
+  t.players.forEach(p => {
+    const chip = document.createElement('label');
+    chip.className = 'lineup-chip' + (state.lineupSelected.has(p.num) ? ' selected' : '');
+    chip.innerHTML = `
+      <input type="checkbox" ${state.lineupSelected.has(p.num) ? 'checked' : ''} data-num="${p.num}">
+      <span class="lnum">#${p.num}</span>
+      <span>${p.name || ''}</span>${renderPosBadges(p.pos)}`;
+    chip.querySelector('input').addEventListener('change', (e) => {
+      if(e.target.checked) state.lineupSelected.add(p.num);
+      else state.lineupSelected.delete(p.num);
+      chip.classList.toggle('selected', e.target.checked);
+    });
+    grid.appendChild(chip);
+  });
+
+  document.getElementById('lineupConfirmBtn').onclick = () => {
+    const selected = t.players.filter(p => state.lineupSelected.has(p.num));
+    if(selected.length === 0){ showToast('Select at least one player'); return; }
+    /* Load selected players into the match roster, replacing any existing roster */
+    state.roster = selected.map(p => ({num:p.num, name:p.name, pos:Array.isArray(p.pos)?p.pos:[]}));
+    state.activeNum = null;
+    renderRoster();
+    renderActivePlayerSelect();
+    renderBoxscore();
+    showToast(`${selected.length} players loaded into match`);
+  };
+}
+
+document.getElementById('lineupSelectAll').addEventListener('click', () => {
+  const t = teamById(state.activeTeamId) || state.teams[0];
+  if(!t) return;
+  t.players.forEach(p => state.lineupSelected.add(p.num));
+  renderLineupSection();
+});
+document.getElementById('lineupSelectNone').addEventListener('click', () => {
+  state.lineupSelected = new Set();
+  renderLineupSection();
+});
+
 /* ================= ROSTER ================= */
-function addPlayer(num, name){
+function addPlayer(num, name, positions){
   num = num.trim();
   if(!num) return;
   if(state.roster.some(p => p.num === num)){ showToast(`#${num} already on roster`); return; }
-  state.roster.push({num, name: name.trim()});
+  state.roster.push({num, name: name.trim(), pos: [...positions]});
   renderRoster();
   renderActivePlayerSelect();
   renderBoxscore();
   document.getElementById('newNum').value='';
   document.getElementById('newName').value='';
+  matchPickerSel.clear();
+  buildPosPicker('matchPosPicker', matchPickerSel);
   document.getElementById('newNum').focus();
 }
 
 document.getElementById('addPlayerBtn').addEventListener('click', () => {
-  addPlayer(document.getElementById('newNum').value, document.getElementById('newName').value);
+  addPlayer(document.getElementById('newNum').value, document.getElementById('newName').value, matchPickerSel);
 });
 document.getElementById('newName').addEventListener('keydown', (e) => {
   if(e.key === 'Enter') document.getElementById('addPlayerBtn').click();
@@ -793,7 +1237,7 @@ function renderRoster(){
   state.roster.forEach(p => {
     const chip = document.createElement('div');
     chip.className = 'roster-chip';
-    chip.innerHTML = `<span class="num">#${p.num}</span><span>${p.name || ''}</span>`;
+    chip.innerHTML = `<span class="num">#${p.num}</span><span>${p.name || ''}</span>${renderPosBadges(p.pos)}`;
     const rm = document.createElement('button');
     rm.className = 'rm';
     rm.textContent = '×';
@@ -856,7 +1300,9 @@ function renderPlayerGrid(){
   wrap.innerHTML = state.roster.map(p => `
     <div class="player-row" data-num="${p.num}">
       <div class="player-row-head">
-        <span class="pnum">#${p.num}</span><span class="pname">${p.name || ''}</span>
+        <span class="pnum">#${p.num}</span>
+        <span class="pname">${p.name || ''}</span>
+        ${renderPosBadges(p.pos)}
       </div>
       <div class="prow-groups">
         ${ACTION_DEFS.map(g => `
@@ -1123,7 +1569,34 @@ function renderLegend(){
   }</div>`;
 }
 
+/* ================= THEME ================= */
+function applyTheme(isLight){
+  document.documentElement.classList.toggle('light', isLight);
+  document.getElementById('themeToggle').textContent = isLight ? '☾' : '☀︎';
+}
+
+document.getElementById('themeToggle').addEventListener('click', () => {
+  const isLight = !document.documentElement.classList.contains('light');
+  applyTheme(isLight);
+  try { localStorage.setItem('statConsoleTheme', isLight ? 'light' : 'dark'); } catch(e){}
+});
+
+/* Restore saved preference on load */
+(function(){
+  let saved = null;
+  try { saved = localStorage.getItem('statConsoleTheme'); } catch(e){}
+  /* Fall back to system preference if no saved choice */
+  const preferLight = saved ? saved === 'light' : window.matchMedia('(prefers-color-scheme: light)').matches;
+  applyTheme(preferLight);
+})();
+
 /* ================= INIT ================= */
+teamsLoad();
+renderTeamManager();
+setTmOpen(false);
+renderLineupSection();
+buildPosPicker('tmPosPicker', tmPickerSel);
+buildPosPicker('matchPosPicker', matchPickerSel);
 renderRoster();
 renderActivePlayerSelect();
 renderBoxscore();
