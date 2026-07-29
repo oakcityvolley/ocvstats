@@ -246,6 +246,49 @@
   }
   .video-empty svg{opacity:.35;}
 
+  /* ---------- Floating video ---------- */
+  .video-card.floating{
+    position:fixed;z-index:200;border-radius:12px;
+    box-shadow:0 8px 40px rgba(0,0,0,.55);
+    overflow:visible; /* allow resize handles to overflow */
+    min-width:240px;min-height:160px;
+  }
+  .video-card.floating .video-frame-outer{
+    border-radius:0; /* inner frame fills card */
+  }
+  .video-float-bar{
+    display:none;align-items:center;justify-content:space-between;
+    padding:7px 10px;background:var(--panel-2);border-bottom:1px solid var(--line);
+    cursor:grab;user-select:none;border-radius:12px 12px 0 0;
+    font-size:11.5px;color:var(--text-dim);font-weight:600;
+    letter-spacing:.03em;
+  }
+  .video-card.floating .video-float-bar{display:flex;}
+  .video-float-bar:active{cursor:grabbing;}
+  .float-dock-btn{
+    background:var(--card);border:1px solid var(--line);color:var(--text-dim);
+    font-size:11px;padding:4px 9px;border-radius:6px;cursor:pointer;
+    font-family:'Inter',sans-serif;font-weight:600;flex-shrink:0;
+  }
+  .float-dock-btn:hover{color:var(--text);border-color:var(--text-dim);}
+  /* Resize handles — 8 directions */
+  .vresize{position:absolute;z-index:10;}
+  .vresize-n {top:-4px;left:8px;right:8px;height:8px;cursor:n-resize;}
+  .vresize-s {bottom:-4px;left:8px;right:8px;height:8px;cursor:s-resize;}
+  .vresize-e {right:-4px;top:8px;bottom:8px;width:8px;cursor:e-resize;}
+  .vresize-w {left:-4px;top:8px;bottom:8px;width:8px;cursor:w-resize;}
+  .vresize-ne{top:-4px;right:-4px;width:14px;height:14px;cursor:ne-resize;}
+  .vresize-nw{top:-4px;left:-4px;width:14px;height:14px;cursor:nw-resize;}
+  .vresize-se{bottom:-4px;right:-4px;width:14px;height:14px;cursor:se-resize;}
+  .vresize-sw{bottom:-4px;left:-4px;width:14px;height:14px;cursor:sw-resize;}
+  /* Placeholder slot */
+  .video-placeholder{
+    background:var(--panel-2);border:2px dashed var(--line);border-radius:14px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:12px;color:var(--text-faint);font-size:13px;min-height:180px;padding:24px;
+    text-align:center;
+  }
+
   .video-controls{
     display:flex;align-items:center;gap:10px;padding:14px 16px;border-top:1px solid var(--line);
     flex-wrap:wrap;
@@ -316,7 +359,7 @@
     border-top:2.5px solid var(--line);
   }
   .action-group[data-group="Serve"]{border-top-color:#5B9BD5;}
-  .action-group[data-group="Reception"]{border-top-color:#9B7EDE;}
+  .action-group[data-group="Receive"]{border-top-color:#9B7EDE;}
   .action-group[data-group="Attack"]{border-top-color:#F5A623;}
   .action-group[data-group="Block"]{border-top-color:#4ADE80;}
   .action-group[data-group="Set"]{border-top-color:#E86A92;}
@@ -379,7 +422,7 @@
     border-left:2.5px solid var(--line);padding:1px 0 1px 6px;
   }
   .prow-group[data-group="Serve"]{border-left-color:#5B9BD5;}
-  .prow-group[data-group="Reception"]{border-left-color:#9B7EDE;}
+  .prow-group[data-group="Receive"]{border-left-color:#9B7EDE;}
   .prow-group[data-group="Attack"]{border-left-color:#F5A623;}
   .prow-group[data-group="Block"]{border-left-color:#4ADE80;}
   .prow-group[data-group="Set"]{border-left-color:#E86A92;}
@@ -464,7 +507,7 @@
     padding:10px 12px;border-top:2.5px solid var(--line);
   }
   .legend-group[data-group="Serve"]{border-top-color:#5B9BD5;}
-  .legend-group[data-group="Reception"]{border-top-color:#9B7EDE;}
+  .legend-group[data-group="Receive"]{border-top-color:#9B7EDE;}
   .legend-group[data-group="Attack"]{border-top-color:#F5A623;}
   .legend-group[data-group="Block"]{border-top-color:#4ADE80;}
   .legend-group[data-group="Set"]{border-top-color:#E86A92;}
@@ -616,7 +659,13 @@
 
   <!-- MAIN -->
   <div class="main">
-    <div class="video-card">
+    <div class="video-card" id="videoCard">
+      <!-- Float drag bar (hidden when docked) -->
+      <div class="video-float-bar" id="videoFloatBar">
+        <span>⠿ Drag to move</span>
+        <button class="float-dock-btn" id="dockBtn">↩ Dock</button>
+      </div>
+      <!-- Resize handles (injected by JS when floating) -->
       <div class="video-frame-outer" id="videoFrame">
         <div id="yt-player"></div>
         <div class="video-empty" id="videoEmptyState">
@@ -637,7 +686,14 @@
           <option value="2">2×</option>
         </select>
         <span class="clock" id="videoClock">00:00 / 00:00</span>
+        <button class="seek-btn" id="floatBtn" title="Detach video into a floating panel">⊞ Float</button>
       </div>
+    </div>
+
+    <!-- Placeholder shown in docked slot when video is floating -->
+    <div class="video-placeholder" id="videoPlaceholder" style="display:none;">
+      <span>Video is floating — drag it anywhere on screen</span>
+      <button class="btn-small" id="dockBtnPlaceholder">↩ Dock video</button>
     </div>
 
     <div class="pad-card">
@@ -744,7 +800,7 @@ const state = {
 const STAT_META = {
   ace:        {label:'Ace', kind:'good'},
   serveErr:   {label:'Service error', kind:'bad'},
-  recErr:     {label:'Reception error', kind:'bad'},
+  recErr:     {label:'Receive error', kind:'bad'},
   block:      {label:'Block touch', kind:'good'},
   blockKill:  {label:'Block kill', kind:'good'},
   blockErr:   {label:'Block error', kind:'bad'},
@@ -784,7 +840,7 @@ const ACTION_DEFS = [
     {key:'ace', full:'Ace', short:'Ace'},
     {key:'serveErr', full:'Error', short:'Err'},
   ]},
-  {group:'Reception', items:[
+  {group:'Receive', items:[
     {key:'recPerfect', full:'Perfect pass', short:'Pass'},
     {key:'recErr', full:'Error', short:'Err'},
   ]},
@@ -1568,6 +1624,159 @@ function renderLegend(){
     `).join('')
   }</div>`;
 }
+
+/* ================= FLOATING VIDEO ================= */
+const FLOAT_DEFAULTS = { w: 480, h: 290, x: 40, y: 80 };
+const FLOAT_MIN_W = 240, FLOAT_MIN_H = 150;
+
+const videoCard  = document.getElementById('videoCard');
+const floatBar   = document.getElementById('videoFloatBar');
+const floatBtn   = document.getElementById('floatBtn');
+const dockBtn    = document.getElementById('dockBtn');
+const dockBtnPh  = document.getElementById('dockBtnPlaceholder');
+const placeholder= document.getElementById('videoPlaceholder');
+
+let isFloating = false;
+let floatState = { x:0, y:0, w:0, h:0 };
+
+function loadFloatState(){
+  try {
+    const s = JSON.parse(localStorage.getItem('statConsoleFloat'));
+    if(s) floatState = s;
+    else floatState = {...FLOAT_DEFAULTS};
+  } catch(e){ floatState = {...FLOAT_DEFAULTS}; }
+}
+
+function saveFloatState(){
+  try { localStorage.setItem('statConsoleFloat', JSON.stringify(floatState)); } catch(e){}
+}
+
+function applyFloatPos(){
+  /* Clamp to viewport */
+  const vw = window.innerWidth, vh = window.innerHeight;
+  floatState.x = Math.max(0, Math.min(floatState.x, vw - floatState.w));
+  floatState.y = Math.max(0, Math.min(floatState.y, vh - 60));
+  floatState.w = Math.max(FLOAT_MIN_W, Math.min(floatState.w, vw - floatState.x));
+  floatState.h = Math.max(FLOAT_MIN_H, Math.min(floatState.h, vh - floatState.y));
+  videoCard.style.left   = floatState.x + 'px';
+  videoCard.style.top    = floatState.y + 'px';
+  videoCard.style.width  = floatState.w + 'px';
+  videoCard.style.height = floatState.h + 'px';
+}
+
+/* Inject resize handles into the card */
+const DIRS = ['n','s','e','w','ne','nw','se','sw'];
+function addResizeHandles(){
+  DIRS.forEach(d => {
+    if(videoCard.querySelector('.vresize-'+d)) return;
+    const el = document.createElement('div');
+    el.className = `vresize vresize-${d}`;
+    el.dataset.dir = d;
+    videoCard.appendChild(el);
+  });
+}
+function removeResizeHandles(){
+  DIRS.forEach(d => {
+    const el = videoCard.querySelector('.vresize-'+d);
+    if(el) el.remove();
+  });
+}
+
+function floatVideo(){
+  if(isFloating) return;
+  isFloating = true;
+  loadFloatState();
+  /* Move card to fixed position */
+  videoCard.classList.add('floating');
+  videoCard.style.overflow = 'visible';
+  /* Show placeholder in original slot */
+  placeholder.style.display = 'flex';
+  floatBtn.textContent = '⊞ Float';
+  addResizeHandles();
+  applyFloatPos();
+}
+
+function dockVideo(){
+  if(!isFloating) return;
+  isFloating = false;
+  videoCard.classList.remove('floating');
+  videoCard.style.cssText = ''; /* clear all inline styles */
+  placeholder.style.display = 'none';
+  removeResizeHandles();
+}
+
+floatBtn.addEventListener('click', () => { isFloating ? dockVideo() : floatVideo(); });
+dockBtn.addEventListener('click', dockVideo);
+dockBtnPh.addEventListener('click', dockVideo);
+
+/* ---- Drag to move ---- */
+(function(){
+  let dragging = false, ox = 0, oy = 0;
+  floatBar.addEventListener('mousedown', (e) => {
+    if(!isFloating) return;
+    dragging = true; ox = e.clientX - floatState.x; oy = e.clientY - floatState.y;
+    document.body.style.userSelect = 'none';
+    e.preventDefault();
+  });
+  floatBar.addEventListener('touchstart', (e) => {
+    if(!isFloating) return;
+    dragging = true;
+    ox = e.touches[0].clientX - floatState.x; oy = e.touches[0].clientY - floatState.y;
+    e.preventDefault();
+  }, {passive:false});
+  document.addEventListener('mousemove', (e) => {
+    if(!dragging) return;
+    floatState.x = e.clientX - ox; floatState.y = e.clientY - oy;
+    applyFloatPos();
+  });
+  document.addEventListener('touchmove', (e) => {
+    if(!dragging) return;
+    floatState.x = e.touches[0].clientX - ox; floatState.y = e.touches[0].clientY - oy;
+    applyFloatPos();
+  }, {passive:true});
+  function stop(){ if(!dragging) return; dragging=false; document.body.style.userSelect=''; saveFloatState(); }
+  document.addEventListener('mouseup', stop);
+  document.addEventListener('touchend', stop);
+})();
+
+/* ---- Resize (8 directions) ---- */
+(function(){
+  let active = null, sx=0, sy=0, sw=0, sh=0, cx=0, cy=0;
+
+  function onDown(e, dir){
+    if(!isFloating) return;
+    active = dir;
+    const touch = e.touches ? e.touches[0] : e;
+    sx = touch.clientX; sy = touch.clientY;
+    sw = floatState.w; sh = floatState.h;
+    cx = floatState.x; cy = floatState.y;
+    document.body.style.userSelect = 'none';
+    e.preventDefault();
+  }
+  videoCard.addEventListener('mousedown', (e) => {
+    const handle = e.target.closest('.vresize');
+    if(handle) onDown(e, handle.dataset.dir);
+  });
+  videoCard.addEventListener('touchstart', (e) => {
+    const handle = e.target.closest('.vresize');
+    if(handle) onDown(e, handle.dataset.dir);
+  }, {passive:false});
+
+  document.addEventListener('mousemove', (e) => { if(active) applyResize(e.clientX, e.clientY); });
+  document.addEventListener('touchmove', (e) => { if(active) applyResize(e.touches[0].clientX, e.touches[0].clientY); }, {passive:true});
+
+  function applyResize(mx, my){
+    const dx = mx - sx, dy = my - sy;
+    if(active.includes('e')) floatState.w = Math.max(FLOAT_MIN_W, sw + dx);
+    if(active.includes('s')) floatState.h = Math.max(FLOAT_MIN_H, sh + dy);
+    if(active.includes('w')){ floatState.w = Math.max(FLOAT_MIN_W, sw - dx); floatState.x = cx + (sw - floatState.w); }
+    if(active.includes('n')){ floatState.h = Math.max(FLOAT_MIN_H, sh - dy); floatState.y = cy + (sh - floatState.h); }
+    applyFloatPos();
+  }
+  function stop(){ if(!active) return; active=null; document.body.style.userSelect=''; saveFloatState(); }
+  document.addEventListener('mouseup', stop);
+  document.addEventListener('touchend', stop);
+})();
 
 /* ================= THEME ================= */
 function applyTheme(isLight){
