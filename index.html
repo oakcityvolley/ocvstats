@@ -335,6 +335,70 @@
   }
   .no-roster-hint{font-size:12.5px;color:var(--text-faint);padding:6px 0 4px;}
 
+  /* ---------- Set tracking ---------- */
+  .set-bar{
+    display:flex;align-items:center;gap:10px;
+    background:var(--panel-2);border:1px solid var(--line);border-radius:9px;
+    padding:8px 12px;margin-bottom:8px;
+  }
+  .set-indicator{
+    font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px;
+    color:var(--amber);letter-spacing:.02em;
+  }
+  .set-bar-sep{flex:1;}
+  .set-next-btn{
+    background:var(--card);border:1px solid var(--line);color:var(--text-dim);
+    font-size:12.5px;font-weight:600;padding:7px 14px;border-radius:7px;
+    font-family:'Inter',sans-serif;cursor:pointer;
+    transition:background .12s,border-color .12s,color .12s;
+  }
+  .set-next-btn:hover{background:var(--amber);border-color:var(--amber);color:#1a1206;}
+  /* Box score set filter tabs */
+  .set-tabs{display:inline-flex;gap:5px;margin-left:10px;flex-wrap:wrap;}
+  .set-tab{
+    font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;
+    padding:4px 10px;border-radius:6px;border:1.5px solid var(--line);
+    background:var(--card);color:var(--text-faint);cursor:pointer;
+    transition:all .12s;
+  }
+  .set-tab:hover{color:var(--text-dim);border-color:var(--text-dim);}
+  .set-tab.active{background:var(--amber);border-color:var(--amber);color:#1a1206;}
+  /* Log set divider */
+  .log-divider{
+    display:flex;align-items:center;gap:10px;
+    padding:5px 10px;font-size:11.5px;font-weight:700;
+    font-family:'JetBrains Mono',monospace;color:var(--amber);
+    letter-spacing:.04em;text-transform:uppercase;
+  }
+  .log-divider::before,.log-divider::after{
+    content:'';flex:1;height:1px;background:var(--amber);opacity:.35;
+  }
+  .log-divider .div-time{color:var(--text-faint);font-size:10.5px;font-weight:400;}
+  .log-divider .del{
+    background:none;border:none;color:var(--text-faint);cursor:pointer;font-size:14px;
+  }
+  .log-divider .del:hover{color:var(--bad);}
+
+  /* ---------- Serve type selector ---------- */
+  .serve-type-bar{
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    background:var(--panel-2);border:1px solid var(--line);border-radius:9px;
+    padding:7px 12px;margin-bottom:8px;
+  }
+  .serve-type-label{
+    font-size:11px;color:var(--text-faint);letter-spacing:.05em;text-transform:uppercase;
+    font-family:'JetBrains Mono',monospace;flex-shrink:0;
+  }
+  .serve-type-toggles{display:flex;gap:5px;}
+  .serve-type-btn{
+    background:var(--card);border:1.5px solid var(--line);color:var(--text-faint);
+    font-size:12px;font-weight:600;padding:5px 12px;border-radius:7px;
+    font-family:'Inter',sans-serif;cursor:pointer;transition:all .12s;
+  }
+  .serve-type-btn:hover{color:var(--text-dim);border-color:var(--text-dim);}
+  .serve-type-btn.active{background:rgba(91,155,213,.2);border-color:#5B9BD5;color:#5B9BD5;}
+  .serve-type-hint{font-size:11px;color:var(--text-faint);font-style:italic;margin-left:auto;}
+
   .undo-bar{
     display:flex;align-items:center;justify-content:space-between;gap:12px;
     background:var(--panel-2);border:1px solid var(--line);border-radius:9px;
@@ -548,7 +612,33 @@
     flex-shrink:0;
   }
   .log-item .del:hover{color:var(--bad);}
+  .log-item .set-badge{
+    font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;
+    color:var(--text-faint);background:var(--card);border:1px solid var(--line);
+    border-radius:4px;padding:1px 5px;flex-shrink:0;
+  }
+  .eff-cell{
+    font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--text-dim);
+    font-weight:600;
+  }
   .log-empty{color:var(--text-faint);font-size:13px;text-align:center;padding:16px 0;}
+
+  /* ---------- Restore banner ---------- */
+  .restore-banner{
+    display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+    background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.35);
+    border-radius:12px;padding:14px 18px;margin-bottom:16px;
+  }
+  .restore-info{display:flex;align-items:center;gap:12px;}
+  .restore-icon{font-size:22px;}
+  .restore-title{font-weight:700;font-size:14px;color:var(--text);}
+  .restore-sub{font-size:12.5px;color:var(--text-dim);margin-top:2px;}
+  .restore-actions{display:flex;gap:8px;}
+  .autosave-indicator{
+    font-size:11px;color:var(--text-faint);font-family:'JetBrains Mono',monospace;
+    font-weight:400;
+  }
+  .autosave-indicator.saved{color:var(--good);}
 
   .footer-actions{display:flex;gap:10px;margin-top:22px;justify-content:flex-end;}
 
@@ -574,6 +664,7 @@
       <span class="tag">Volleyball Match Tagger</span>
     </div>
     <div class="header-right">
+      <span class="autosave-indicator" id="autosaveIndicator"></span>
       <button class="theme-toggle" id="themeToggle" title="Toggle light/dark mode">☀︎</button>
       <div class="matchclock" id="headerClock">No video loaded</div>
     </div>
@@ -705,6 +796,22 @@
         </span>
       </h2>
 
+      <div class="set-bar">
+        <span class="set-indicator" id="setIndicator">Set 1</span>
+        <span class="set-bar-sep"></span>
+        <button class="set-next-btn" id="setNextBtn">End Set 1 →</button>
+      </div>
+
+      <div class="serve-type-bar">
+        <span class="serve-type-label">Serve type:</span>
+        <div class="serve-type-toggles">
+          <button class="serve-type-btn active" data-type="">Any</button>
+          <button class="serve-type-btn" data-type="Float">Float</button>
+          <button class="serve-type-btn" data-type="Jump">Jump</button>
+        </div>
+        <span class="serve-type-hint">Applied to next serve tagged</span>
+      </div>
+
       <div class="undo-bar">
         <span class="undo-msg" id="undoMsg">No events tagged yet</span>
         <button class="undo-btn" id="undoBtn" disabled>↺ Undo last tag</button>
@@ -725,7 +832,7 @@
 
   <!-- BOX SCORE -->
   <div class="boxscore">
-    <h2>Live Box Score</h2>
+    <h2>Live Box Score <span class="set-tabs" id="setTabs"></span></h2>
     <div id="boxscoreWrap"></div>
   </div>
 
@@ -739,6 +846,21 @@
   <div class="log-card">
     <h2>Event Log <button class="btn-small" id="clearLogBtn">Clear all</button></h2>
     <div class="log-list" id="logList"><div class="log-empty">No events tagged yet.</div></div>
+  </div>
+
+  <!-- RESTORE SESSION BANNER (shown on load if autosave exists) -->
+  <div class="restore-banner" id="restoreBanner" style="display:none;">
+    <div class="restore-info">
+      <span class="restore-icon">💾</span>
+      <div>
+        <div class="restore-title" id="restoreTitle">Unsaved session found</div>
+        <div class="restore-sub" id="restoreSub"></div>
+      </div>
+    </div>
+    <div class="restore-actions">
+      <button class="btn-primary" id="restoreYesBtn">Restore session</button>
+      <button class="btn-ghost" id="restoreNoBtn">Discard</button>
+    </div>
   </div>
 
   <div class="footer-actions">
@@ -787,80 +909,95 @@ const tmPickerSel = new Set();
 const matchPickerSel = new Set();
 
 const state = {
-  roster: [],          // {num, name} — current match's active players only
+  roster: [],          // {num, name, pos} — current match's active players only
   activeNum: null,
-  events: [],          // {t, num, stat, label, kind}
+  events: [],          // {t, num, stat, label, kind, set} or {type:'setmark', t, set, label}
   player: null,
   playerReady: false,
-  teams: [],           // [{id, name, players:[{num,name}]}]
-  activeTeamId: null,  // which team is selected in team manager
-  lineupSelected: new Set(), // jersey nums checked for current match
+  teams: [],           // [{id, name, players:[{num,name,pos}]}]
+  activeTeamId: null,
+  lineupSelected: new Set(),
+  currentSet: 1,       // which set is currently being played
+  activeSetFilter: 0,  // 0 = All, 1-5 = specific set
+  serveType: '',       // '' | 'Float' | 'Jump'
 };
 
 const STAT_META = {
-  ace:        {label:'Ace', kind:'good'},
+  ace:        {label:'Ace',           kind:'good'},
   serveErr:   {label:'Service error', kind:'bad'},
+  recPerfect: {label:'Pass (Perfect)',kind:'good'},
+  recGood:    {label:'Pass (Good)',   kind:'neutral'},
+  recPoor:    {label:'Pass (Poor)',   kind:'bad'},
   recErr:     {label:'Receive error', kind:'bad'},
-  block:      {label:'Block touch', kind:'good'},
-  blockKill:  {label:'Block kill', kind:'good'},
-  blockErr:   {label:'Block error', kind:'bad'},
-  recPerfect: {label:'Perfect pass', kind:'good'},
-  assist:     {label:'Assist', kind:'good'},
-  kill:       {label:'Kill', kind:'good'},
-  forcedErr:  {label:'Forced error', kind:'good'},
-  setErr:     {label:'Set error', kind:'bad'},
-  setInacc:   {label:'Inaccurate set', kind:'bad'},
-  dig:        {label:'Dig', kind:'good'},
-  save:       {label:'Save', kind:'good'},
-  pancake:    {label:'Pancake', kind:'good'},
+  block:      {label:'Block touch',   kind:'good'},
+  blockKill:  {label:'Block kill',    kind:'good'},
+  blockErr:   {label:'Block error',   kind:'bad'},
+  assist:     {label:'Assist',        kind:'good'},
+  kill:       {label:'Kill',          kind:'good'},
+  attackIn:   {label:'Attack in play',kind:'neutral'},
+  forcedErr:  {label:'Forced error',  kind:'good'},
+  setErr:     {label:'Set error',     kind:'bad'},
+  setInacc:   {label:'Inaccurate set',     kind:'bad'},
+  ballHandle: {label:'Ball handling error', kind:'bad'},
+  dig:        {label:'Dig',           kind:'good'},
+  save:       {label:'Save',          kind:'good'},
+  pancake:    {label:'Pancake',       kind:'good'},
 };
 
 const BOX_COLUMNS = [
-  {key:'ace', label:'ACE'},
-  {key:'serveErr', label:'SE'},
-  {key:'recPerfect', label:'PP'},
-  {key:'recErr', label:'RE'},
-  {key:'kill', label:'K'},
-  {key:'forcedErr', label:'FE'},
-  {key:'block', label:'BLK'},
-  {key:'blockKill', label:'BK'},
-  {key:'blockErr', label:'BE'},
-  {key:'assist', label:'AST'},
-  {key:'setErr', label:'STE'},
-  {key:'setInacc', label:'INS'},
-  {key:'dig', label:'DIG'},
-  {key:'save', label:'SV'},
-  {key:'pancake', label:'PAN'},
+  {key:'ace',        label:'ACE'},
+  {key:'serveErr',   label:'SE'},
+  {key:'recPerfect', label:'P3'},
+  {key:'recGood',    label:'P2'},
+  {key:'recPoor',    label:'P1'},
+  {key:'recErr',     label:'RE'},
+  {key:'kill',       label:'K'},
+  {key:'attackIn',   label:'ATT'},
+  {key:'forcedErr',  label:'FE'},
+  {key:'block',      label:'BLK'},
+  {key:'blockKill',  label:'BK'},
+  {key:'blockErr',   label:'BE'},
+  {key:'assist',     label:'AST'},
+  {key:'setErr',     label:'STE'},
+  {key:'setInacc',   label:'INS'},
+  {key:'ballHandle', label:'BHE'},
+  {key:'dig',        label:'DIG'},
+  {key:'save',       label:'SV'},
+  {key:'pancake',    label:'PAN'},
 ];
 
 /* Shared source of truth for both layouts: grouped (for "by action" view)
    and short-labeled (for compact per-player buttons) */
 const ACTION_DEFS = [
   {group:'Serve', items:[
-    {key:'ace', full:'Ace', short:'Ace'},
+    {key:'ace',      full:'Ace',   short:'Ace'},
     {key:'serveErr', full:'Error', short:'Err'},
   ]},
   {group:'Receive', items:[
-    {key:'recPerfect', full:'Perfect pass', short:'Pass'},
-    {key:'recErr', full:'Error', short:'Err'},
+    {key:'recPerfect', full:'Perfect (3)', short:'P3'},
+    {key:'recGood',    full:'Good (2)',    short:'P2'},
+    {key:'recPoor',    full:'Poor (1)',    short:'P1'},
+    {key:'recErr',     full:'Error',       short:'Err'},
   ]},
   {group:'Attack', items:[
-    {key:'kill', full:'Kill', short:'Kill'},
-    {key:'forcedErr', full:'Forced error', short:'F.Err'},
+    {key:'kill',      full:'Kill',          short:'Kill'},
+    {key:'attackIn',  full:'Attack in play',short:'In'},
+    {key:'forcedErr', full:'Forced error',  short:'F.Err'},
   ]},
   {group:'Block', items:[
-    {key:'block', full:'Block touch', short:'Blk'},
-    {key:'blockKill', full:'Block kill', short:'B.Kill'},
-    {key:'blockErr', full:'Error', short:'Err'},
+    {key:'block',     full:'Block touch', short:'Blk'},
+    {key:'blockKill', full:'Block kill',  short:'B.Kill'},
+    {key:'blockErr',  full:'Error',       short:'Err'},
   ]},
   {group:'Set', items:[
-    {key:'assist', full:'Assist', short:'Asst'},
-    {key:'setErr', full:'Error', short:'Err'},
-    {key:'setInacc', full:'Inaccurate', short:'Inacc'},
+    {key:'assist',     full:'Assist',               short:'Asst'},
+    {key:'setErr',     full:'Error',                short:'Err'},
+    {key:'setInacc',   full:'Inaccurate',           short:'Inacc'},
+    {key:'ballHandle', full:'Ball handling error',  short:'BHE'},
   ]},
   {group:'Defense', items:[
-    {key:'dig', full:'Dig', short:'Dig'},
-    {key:'save', full:'Save', short:'Save'},
+    {key:'dig',     full:'Dig',     short:'Dig'},
+    {key:'save',    full:'Save',    short:'Save'},
     {key:'pancake', full:'Pancake', short:'Pan'},
   ]},
 ];
@@ -1239,6 +1376,7 @@ function renderLineupSection(){
     renderActivePlayerSelect();
     renderBoxscore();
     showToast(`${selected.length} players loaded into match`);
+    autosave();
   };
 }
 
@@ -1267,6 +1405,7 @@ function addPlayer(num, name, positions){
   matchPickerSel.clear();
   buildPosPicker('matchPosPicker', matchPickerSel);
   document.getElementById('newNum').focus();
+  autosave();
 }
 
 document.getElementById('addPlayerBtn').addEventListener('click', () => {
@@ -1394,9 +1533,12 @@ setMode('player');
 function tagEvent(num, statKey, btnEl){
   const meta = STAT_META[statKey];
   const t = state.player && state.playerReady ? state.player.getCurrentTime() : 0;
+  const isServe = statKey === 'ace' || statKey === 'serveErr';
   state.events.push({
     t, num, stat: statKey, label: meta.label, kind: meta.kind,
-    name: (state.roster.find(p=>p.num===num)||{}).name || ''
+    name: (state.roster.find(p=>p.num===num)||{}).name || '',
+    set: state.currentSet,
+    serveType: isServe ? state.serveType : undefined,
   });
   if(btnEl){
     btnEl.classList.remove('flash');
@@ -1407,7 +1549,71 @@ function tagEvent(num, statKey, btnEl){
   renderLog();
   renderInlineCounts();
   refreshUndoBar();
+  autosave();
 }
+
+/* ================= SERVE TYPE ================= */
+document.querySelectorAll('.serve-type-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    state.serveType = btn.dataset.type;
+    document.querySelectorAll('.serve-type-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+/* ================= SET TRACKING ================= */
+function refreshSetUI(){
+  const s = state.currentSet;
+  document.getElementById('setIndicator').textContent = `Set ${s}`;
+  document.getElementById('setNextBtn').textContent =
+    s >= 5 ? 'Match over' : `End Set ${s} →`;
+  document.getElementById('setNextBtn').disabled = s >= 5;
+  renderSetTabs();
+}
+
+function markEndOfSet(){
+  if(state.currentSet >= 5) return;
+  const t = state.player && state.playerReady ? state.player.getCurrentTime() : 0;
+  const endedSet = state.currentSet;
+  state.events.push({
+    type: 'setmark', t,
+    set: endedSet,
+    label: `End of Set ${endedSet}`,
+  });
+  state.currentSet++;
+  refreshSetUI();
+  renderLog();
+  renderBoxscore();
+  refreshUndoBar();
+  autosave();
+  showToast(`Set ${endedSet} ended — now tracking Set ${state.currentSet}`);
+}
+
+function renderSetTabs(){
+  const wrap = document.getElementById('setTabs');
+  /* Determine which sets have events */
+  const setsWithEvents = new Set(
+    state.events.filter(e=>e.stat).map(e=>e.set)
+  );
+  /* Always show All; show set tabs for sets that have data or are current */
+  const tabs = [0]; // 0 = All
+  for(let i=1; i<=state.currentSet; i++) tabs.push(i);
+  wrap.innerHTML = tabs.map(s => {
+    const label = s === 0 ? 'All' : `S${s}`;
+    const active = state.activeSetFilter === s ? ' active' : '';
+    const hasData = s === 0 || setsWithEvents.has(s);
+    return `<button class="set-tab${active}" data-set="${s}" ${!hasData&&s>0?'style="opacity:.45"':''}>${label}</button>`;
+  }).join('');
+  wrap.querySelectorAll('.set-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.activeSetFilter = parseInt(btn.dataset.set);
+      renderSetTabs();
+      renderBoxscore();
+    });
+  });
+}
+
+document.getElementById('setNextBtn').addEventListener('click', markEndOfSet);
 
 /* ================= UNDO ================= */
 /* Bar is always present at a fixed position; we just update its text/disabled state in place
@@ -1422,21 +1628,34 @@ function refreshUndoBar(){
     return;
   }
   const ev = state.events[state.events.length - 1];
-  const who = ev.name ? `#${ev.num} ${ev.name}` : `#${ev.num}`;
-  msg.innerHTML = `Last: <b>${ev.label}</b> — ${who} at ${fmtTime(ev.t)}`;
+  if(ev.type === 'setmark'){
+    msg.innerHTML = `Last: <b>${ev.label}</b> at ${fmtTime(ev.t)}`;
+    btn.textContent = '↺ Undo set marker';
+  } else {
+    const who = ev.name ? `#${ev.num} ${ev.name}` : `#${ev.num}`;
+    msg.innerHTML = `Last: <b>${ev.label}</b> — ${who} at ${fmtTime(ev.t)}`;
+    btn.textContent = '↺ Undo last tag';
+  }
   btn.disabled = false;
-  btn.textContent = '↺ Undo last tag';
 }
 
 document.getElementById('undoBtn').addEventListener('click', () => {
   if(state.events.length === 0) return;
   const removed = state.events.pop();
+  if(removed.type === 'setmark' && state.currentSet > 1){
+    state.currentSet--;
+    refreshSetUI();
+    showToast(`Set marker removed — back to Set ${state.currentSet}`);
+  } else {
+    const who = removed.name ? `#${removed.num} ${removed.name}` : `#${removed.num}`;
+    showToast(`Removed: ${removed.label} — ${who}`);
+  }
   renderBoxscore();
+  renderSetTabs();
   renderLog();
   renderInlineCounts();
   refreshUndoBar();
-  const who = removed.name ? `#${removed.num} ${removed.name}` : `#${removed.num}`;
-  showToast(`Removed: ${removed.label} — ${who}`);
+  autosave();
 });
 
 /* Keyboard shortcut: Ctrl/Cmd+Z to undo the last tag (when not typing in a field) */
@@ -1487,25 +1706,62 @@ function renderBoxscore(){
     wrap.innerHTML = `<div class="empty-box">Add players to see live stats here.</div>`;
     return;
   }
+  const eventsToCount = state.activeSetFilter === 0
+    ? state.events
+    : state.events.filter(ev => ev.set === state.activeSetFilter);
+
   let totals = {};
   state.roster.forEach(p => { totals[p.num] = {}; BOX_COLUMNS.forEach(c => totals[p.num][c.key]=0); });
-  state.events.forEach(ev => {
+  eventsToCount.forEach(ev => {
+    if(ev.type === 'setmark') return;
     if(totals[ev.num] !== undefined && totals[ev.num][ev.stat] !== undefined){
       totals[ev.num][ev.stat]++;
     }
   });
 
-  let thead = `<tr><th>Player</th>${BOX_COLUMNS.map(c=>`<th title="${STAT_META[c.key].label}">${c.label}</th>`).join('')}<th>TOT</th></tr>`;
+  /* Compute derived stats per player */
+  function hitEff(t){
+    const att = t.kill + t.attackIn + t.forcedErr;
+    if(att === 0) return '—';
+    return ((t.kill - 0) / att).toFixed(3).replace(/^0/, '');
+  }
+  function passAvg(t){
+    const tot = t.recPerfect + t.recGood + t.recPoor;
+    if(tot === 0) return '—';
+    return ((t.recPerfect * 3 + t.recGood * 2 + t.recPoor * 1) / tot).toFixed(2);
+  }
+
+  const setLabel = state.activeSetFilter === 0 ? 'Full Match' : `Set ${state.activeSetFilter}`;
+  let thead = `<tr>
+    <th>Player (${setLabel})</th>
+    ${BOX_COLUMNS.map(c=>`<th title="${STAT_META[c.key].label}">${c.label}</th>`).join('')}
+    <th title="Hitting Efficiency: (Kills) / (K+ATT+FE)">EFF</th>
+    <th title="Average Pass Grade (3=Perfect, 2=Good, 1=Poor)">AVG</th>
+    <th>TOT</th>
+  </tr>`;
+
   let rows = state.roster.map(p => {
     const t = totals[p.num];
     const sum = BOX_COLUMNS.reduce((a,c)=>a+t[c.key],0);
-    return `<tr><td><span class="num-cell">#${p.num}</span>${p.name||''}</td>${BOX_COLUMNS.map(c=>`<td>${t[c.key]||''}</td>`).join('')}<td style="color:var(--amber);font-weight:700;">${sum}</td></tr>`;
+    return `<tr>
+      <td><span class="num-cell">#${p.num}</span>${p.name||''}</td>
+      ${BOX_COLUMNS.map(c=>`<td>${t[c.key]||''}</td>`).join('')}
+      <td class="eff-cell">${hitEff(t)}</td>
+      <td class="eff-cell">${passAvg(t)}</td>
+      <td style="color:var(--amber);font-weight:700;">${sum}</td>
+    </tr>`;
   }).join('');
 
   let teamTotals = {};
   BOX_COLUMNS.forEach(c => teamTotals[c.key] = state.roster.reduce((a,p)=>a+totals[p.num][c.key],0));
   const teamSum = BOX_COLUMNS.reduce((a,c)=>a+teamTotals[c.key],0);
-  let foot = `<tr><td>Team</td>${BOX_COLUMNS.map(c=>`<td>${teamTotals[c.key]||''}</td>`).join('')}<td>${teamSum}</td></tr>`;
+  let foot = `<tr>
+    <td>Team</td>
+    ${BOX_COLUMNS.map(c=>`<td>${teamTotals[c.key]||''}</td>`).join('')}
+    <td class="eff-cell">${hitEff(teamTotals)}</td>
+    <td class="eff-cell">${passAvg(teamTotals)}</td>
+    <td>${teamSum}</td>
+  </tr>`;
 
   wrap.innerHTML = `<table><thead>${thead}</thead><tbody>${rows}</tbody><tfoot>${foot}</tfoot></table>`;
 }
@@ -1518,15 +1774,25 @@ function renderLog(){
     return;
   }
   const sorted = state.events.map((ev,i)=>({...ev, idx:i})).sort((a,b)=>b.t-a.t);
-  wrap.innerHTML = sorted.map(ev => `
-    <div class="log-item">
-      <span class="time" data-seek="${ev.t}">${fmtTime(ev.t)}</span>
-      <span class="who">#${ev.num} ${ev.name||''}</span>
-      <span class="what">${ev.label}</span>
-      <span class="tag ${ev.kind}">${ev.kind}</span>
-      <button class="del" data-idx="${ev.idx}">×</button>
-    </div>
-  `).join('');
+  wrap.innerHTML = sorted.map(ev => {
+    if(ev.type === 'setmark'){
+      return `
+        <div class="log-divider">
+          <span>${ev.label}</span>
+          <span class="div-time">${fmtTime(ev.t)}</span>
+          <button class="del" data-idx="${ev.idx}" title="Remove set marker">×</button>
+        </div>`;
+    }
+    return `
+      <div class="log-item">
+        <span class="time" data-seek="${ev.t}">${fmtTime(ev.t)}</span>
+        <span class="who">#${ev.num} ${ev.name||''}</span>
+        <span class="what">${ev.label}${ev.serveType ? ` <span style="font-size:10px;opacity:.7">(${ev.serveType})</span>` : ''}</span>
+        <span class="tag ${ev.kind}">${ev.kind}</span>
+        <span class="set-badge">S${ev.set||1}</span>
+        <button class="del" data-idx="${ev.idx}">×</button>
+      </div>`;
+  }).join('');
 }
 
 document.getElementById('logList').addEventListener('click', (e) => {
@@ -1544,36 +1810,66 @@ document.getElementById('logList').addEventListener('click', (e) => {
     renderLog();
     renderInlineCounts();
     refreshUndoBar();
+    autosave();
   }
 });
 
 document.getElementById('clearLogBtn').addEventListener('click', () => {
   if(state.events.length && !confirm('Clear all tagged events? This cannot be undone.')) return;
   state.events = [];
+  state.currentSet = 1;
+  state.activeSetFilter = 0;
   renderBoxscore();
   renderLog();
   renderInlineCounts();
   refreshUndoBar();
+  refreshSetUI();
+  autosave();
 });
 
 /* ================= EXPORT ================= */
 document.getElementById('exportBtn').addEventListener('click', () => {
   if(state.events.length === 0){ showToast('No events to export yet'); return; }
 
+  const statEvents = state.events.filter(ev => ev.stat);
   let lines = [];
-  lines.push(['Timestamp (s)','Timestamp (mm:ss)','Player #','Player Name','Stat','Outcome'].join(','));
+
+  /* Event log with Set column */
+  lines.push(['Set','Timestamp (s)','Timestamp (mm:ss)','Player #','Player Name','Stat','Outcome','Serve Type'].join(','));
   state.events.slice().sort((a,b)=>a.t-b.t).forEach(ev => {
-    lines.push([
-      ev.t.toFixed(1), fmtTime(ev.t), ev.num, `"${ev.name||''}"`, `"${ev.label}"`, ev.kind
-    ].join(','));
+    if(ev.type === 'setmark'){
+      lines.push([`"${ev.label}"`, ev.t.toFixed(1), fmtTime(ev.t), '', '', '', '', ''].join(','));
+    } else {
+      lines.push([
+        ev.set||1, ev.t.toFixed(1), fmtTime(ev.t), ev.num, `"${ev.name||''}"`,
+        `"${ev.label}"`, ev.kind, ev.serveType||''
+      ].join(','));
+    }
   });
+
+  /* Full match box score */
   lines.push('');
+  lines.push(['--- FULL MATCH BOX SCORE ---'].join(','));
   lines.push(['Player #','Player Name', ...BOX_COLUMNS.map(c=>c.label), 'Total'].join(','));
   state.roster.forEach(p => {
     const t = {}; BOX_COLUMNS.forEach(c => t[c.key]=0);
-    state.events.filter(ev=>ev.num===p.num).forEach(ev => { if(t[ev.stat]!==undefined) t[ev.stat]++; });
+    statEvents.filter(ev=>ev.num===p.num).forEach(ev => { if(t[ev.stat]!==undefined) t[ev.stat]++; });
     const sum = BOX_COLUMNS.reduce((a,c)=>a+t[c.key],0);
     lines.push([p.num, `"${p.name||''}"`, ...BOX_COLUMNS.map(c=>t[c.key]), sum].join(','));
+  });
+
+  /* Per-set box scores */
+  const setsUsed = [...new Set(statEvents.map(ev=>ev.set||1))].sort();
+  setsUsed.forEach(s => {
+    lines.push('');
+    lines.push([`--- SET ${s} BOX SCORE ---`].join(','));
+    lines.push(['Player #','Player Name', ...BOX_COLUMNS.map(c=>c.label), 'Total'].join(','));
+    state.roster.forEach(p => {
+      const t = {}; BOX_COLUMNS.forEach(c => t[c.key]=0);
+      statEvents.filter(ev=>ev.num===p.num && (ev.set||1)===s).forEach(ev => { if(t[ev.stat]!==undefined) t[ev.stat]++; });
+      const sum = BOX_COLUMNS.reduce((a,c)=>a+t[c.key],0);
+      lines.push([p.num, `"${p.name||''}"`, ...BOX_COLUMNS.map(c=>t[c.key]), sum].join(','));
+    });
   });
 
   const blob = new Blob([lines.join('\n')], {type:'text/csv'});
@@ -1799,6 +2095,90 @@ document.getElementById('themeToggle').addEventListener('click', () => {
   applyTheme(preferLight);
 })();
 
+/* ================= SESSION SAVE / RESTORE ================= */
+const AUTOSAVE_KEY  = 'statConsoleAutosave';
+
+/* --- Snapshot current session state --- */
+function sessionSnapshot(){
+  return {
+    savedAt:    Date.now(),
+    matchName:  document.getElementById('matchName').value.trim(),
+    ytUrl:      document.getElementById('ytUrl').value.trim(),
+    events:     state.events,
+    roster:     state.roster,
+    currentSet: state.currentSet,
+  };
+}
+
+/* --- Restore a snapshot into state and UI --- */
+function restoreSnapshot(snap){
+  state.events     = snap.events || [];
+  state.roster     = snap.roster || [];
+  state.currentSet = snap.currentSet || 1;
+  state.activeNum  = null;
+  state.activeSetFilter = 0;
+
+  if(snap.matchName) document.getElementById('matchName').value = snap.matchName;
+  if(snap.ytUrl){
+    document.getElementById('ytUrl').value = snap.ytUrl;
+    const id = extractVideoId(snap.ytUrl);
+    if(id) initPlayer(id);
+  }
+
+  renderRoster();
+  renderActivePlayerSelect();
+  renderBoxscore();
+  renderLog();
+  renderInlineCounts();
+  refreshUndoBar();
+  refreshSetUI();
+}
+
+/* --- Auto-save (called after every state change) --- */
+let autosaveTimer = null;
+function autosave(){
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(() => {
+    try {
+      localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(sessionSnapshot()));
+      const ind = document.getElementById('autosaveIndicator');
+      ind.textContent = '● Auto-saved';
+      ind.classList.add('saved');
+      setTimeout(() => { ind.textContent = ''; ind.classList.remove('saved'); }, 2000);
+    } catch(e){}
+  }, 600); /* slight debounce so rapid tagging doesn't hammer storage */
+}
+
+/* --- Check for autosave on load and show restore banner --- */
+function checkAutosave(){
+  try {
+    const raw = localStorage.getItem(AUTOSAVE_KEY);
+    if(!raw) return;
+    const snap = JSON.parse(raw);
+    if(!snap || !snap.events || snap.events.length === 0) return;
+    const mins = Math.round((Date.now() - snap.savedAt) / 60000);
+    const timeAgo = mins < 1 ? 'just now' : mins < 60 ? `${mins}m ago` : `${Math.round(mins/60)}h ago`;
+    const name = snap.matchName || 'Unnamed match';
+    document.getElementById('restoreTitle').textContent = `Restore "${name}"?`;
+    document.getElementById('restoreSub').textContent =
+      `${snap.events.filter(e=>e.stat).length} events tagged · Last saved ${timeAgo}`;
+    document.getElementById('restoreBanner').style.display = 'flex';
+  } catch(e){}
+}
+
+document.getElementById('restoreYesBtn').addEventListener('click', () => {
+  try {
+    const snap = JSON.parse(localStorage.getItem(AUTOSAVE_KEY));
+    if(snap){ restoreSnapshot(snap); showToast('Session restored'); }
+  } catch(e){ showToast('Could not restore session'); }
+  document.getElementById('restoreBanner').style.display = 'none';
+});
+
+document.getElementById('restoreNoBtn').addEventListener('click', () => {
+  localStorage.removeItem(AUTOSAVE_KEY);
+  document.getElementById('restoreBanner').style.display = 'none';
+});
+
 /* ================= INIT ================= */
 teamsLoad();
 renderTeamManager();
@@ -1812,6 +2192,8 @@ renderBoxscore();
 renderLog();
 refreshUndoBar();
 renderLegend();
+refreshSetUI();
+checkAutosave();
 </script>
 </body>
 </html>
